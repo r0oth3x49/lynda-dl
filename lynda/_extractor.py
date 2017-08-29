@@ -1,0 +1,218 @@
+#!/usr/bin/python
+
+import os
+import sys
+import time
+from pprint import pprint
+from .colorized import *
+from ._compat import (
+    re,
+    logout,
+    ex_url,
+    get_url,
+    requests,
+    org_url,
+    user_url,
+    sigin_url,
+    passw_url,
+    course_url,
+    std_headers,
+    compat_urlparse,
+    )
+
+early_py_version = sys.version_info[:2] < (2, 7)
+session = requests.Session()
+
+class LyndaInfoExtractor:
+
+    def match_id(self, url):
+        course_name = url.split("/")[-2]
+        if course_name:
+            return course_name
+
+    def _get_org_csrf_token(self, login_url):
+        try:
+           response = session.get(login_url)
+           match = re.search(r'name="seasurf"\s+value="(.*)"', response.text)
+           return match.group(1)
+        except AttributeError:
+            session.get(logout)
+            response = re.search(r'name="seasurf"\s+value="(.*)"', response.text)
+            return match.group(1)
+        
+    def _hidden_inputs(self, form_html):
+        try:
+           match = re.search(r'name="-_-"\s+value="(.*)"', str(form_html))
+           return {"-_-":match.group(1)}
+        except AttributeError:
+            session.get(logout)
+            response = re.search(r'name="-_-"\s+value="(.*)"', str(form_html))
+            return {"-_-":match.group(1)}
+
+    def _login_step(self, form_html, fallback_action_url, extra_form_data, referrer_url):
+        action_url = fallback_action_url
+        form_data = self._hidden_inputs(form_html)
+        form_data.update(extra_form_data)
+
+        try:
+            response = session.post(action_url, data=form_data,
+                              headers={
+                                  'Referer': referrer_url,
+                                  'X-Requested-With': 'XMLHttpRequest',
+                                  }).json()
+        except Exception as e:
+            print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "Error : {}.".format(e))
+            exit(0)
+
+        return response, action_url
+
+    def login(self, user, passw, org=None):
+        if org:
+            sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as organization : " + fm + sb +"(%s)" % (org) +  fg + sb +"...\n")
+            organization = org
+            lib_card_num = user
+            lib_card_pin = passw
+            login_url    = org_url.format(organization=organization)
+            csrftoken = self._get_org_csrf_token(login_url)
+            login_data   = dict(
+                                    libraryCardNumber=str(lib_card_num),
+                                    libraryCardPin=str(lib_card_pin),
+                                    libraryCardPasswordVerify="",
+                                    org=str(organization),
+                                    currentView="login",
+                                    seasurf=csrftoken
+                                )
+            std_headers['Referer'] = login_url
+            response    = session.post(login_url, data=login_data, headers=std_headers)
+            response_text = response.text
+            try:
+                message      = response_text.split('<span class="account-name" data-qa="eyebrow_account_menu">')[1].split('</span>')[0]
+            except IndexError:
+                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "Logged in failed.")
+                sys.exit(0)
+            else:
+                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Logged in successfully.")
+        else:
+            username    = user
+            sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as user : " + fm + sb +"(%s)" % (username) +  fg + sb +"...\n")
+            password    = passw
+            sigin_page  = session.get(sigin_url)
+            sigin_form  = re.search(r'(?s)(<form[^>]+data-form-name=["\']signin["\'][^>]*>.+?</form>)',sigin_page.text)
+            form_html   = sigin_form.group()
+            sign_page, signin_url = self._login_step(form_html, passw_url, {'email': username}, sigin_url)
+            try:
+                password_form = sign_page["body"]
+            except KeyError:
+                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "Lynda Says : Sorry, we do not recognize that email or username.")
+                sys.exit(0)
+            response, url = self._login_step(password_form, user_url, {'email': username, 'password': password}, signin_url)
+            response_text = response.get('UserID') if response.get('UserID') else response.get('password')
+            if response_text != "The username or password is invalid.":
+                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Logged in successfully.")
+            else:
+                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "Lynda Says : The password is invalid")
+                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "Logged in failed.")
+                sys.exit(0)
+
+
+    def logout(self):
+        print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloaded course information webpages successfully..")
+        print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to logout now...")
+        session.get(logout)
+        print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Logged out successfully.")
+
+
+    def _generate_dirname(self, title):
+        ok = re.compile(r'[^/]')
+
+        if os.name == "nt":
+            ok = re.compile(r'[^\\/:*?"<>|]')
+
+        dirname = "".join(x if ok.match(x) else "_" for x in title)
+        return dirname
+        
+
+    def course_videos_count(self, json):
+        count = 0
+        unaccessible_videos = 0
+        for chapter in json["Chapters"]:
+            for video in chapter.get('Videos', []):
+                if video.get('HasAccess') == False:
+                    unaccessible_videos += 1
+                    continue
+                count += 1
+                
+        return count
+    
+    def ExtractExerciseFile(self, courseId, courseName):
+        fileZip = {}
+        lUrl = []
+        cUrl = ex_url % (courseId)
+        try:
+            r           = session.get(cUrl).json()
+            ex          = r.get("exercisetab")
+            matchUrl    = re.findall('href="(.+)"\srole', ex)
+            matchName   = re.findall('span\sclass="exercise-name">(.+)</span', ex)
+        except:
+            return "nofile"
+        else:
+            for fzip in matchUrl:
+                fUrl    = "https://www.lynda.com%s" % (fzip)
+                r       = session.get(fUrl, stream=True)
+                zip_url = r.url
+                lUrl.append(zip_url)
+            fileZip     = dict(zip(matchName, lUrl))
+            return fileZip
+        
+    def Progress(self, iteration, total, prefix = '' , fileSize='' , downloaded = '' , barLength = 100):
+        filledLength    = int(round(barLength * iteration / float(total)))
+        percents        = format(100.00 * (iteration / float(total)), '.2f')
+        bar             = '=' * filledLength + '-' * (barLength - filledLength)
+        sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + 'Extracting ' + fg + sb + '(' + str(fileSize) + '/' + str(downloaded) + ') |' + bar + fg + sb + '| ' + percents + '%                                      \r')
+        sys.stdout.flush()
+        
+
+    def real_extract(self, url, course_name):
+
+        rootDir             = course_name
+
+        course_id           = (url.split('/')[-1]).split('-')[0]
+        curl                = course_url % (course_id)
+        course              = session.get(curl).json()
+        unaccessible_videos = 0
+
+        lynda_dict = {}
+        num_lect =  self.course_videos_count(course)
+        sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Found (%s) lectures\n" % (num_lect))
+        counter = 0
+
+        for chapter in course["Chapters"]:
+            chap_num        = chapter.get('ChapterIndex')
+            temp_           = ''.join([i if ord(i) < 128 else ' ' for i in chapter.get('Title')])
+            temp_name       = self._generate_dirname(temp_)
+            chap            = (temp_name.split('.', 1)[-1] if '.' else temp_name)
+            chap_title      = "{0:02d} {1!s}".format(chap_num, chap)
+            if chap_num not in lynda_dict:
+                lynda_dict[chap_title] = {}
+            for video in chapter.get('Videos', []):
+                counter += 1
+                if video.get('HasAccess') == False:
+                    unaccessible_videos += 1
+                    continue
+                self.Progress(counter, num_lect, fileSize = str(num_lect), downloaded = str(counter), barLength = 40)
+                video_id        = video.get('ID')
+                lect_num        = video.get('VideoIndex')
+                lecture         = ''.join([i if ord(i) < 128 else ' ' for i in video.get('Title')])
+                lecture_title   = "{0:03d} {1!s}".format(lect_num, lecture)
+                if lect_num not in lynda_dict[chap_title]:
+                    lynda_dict[chap_title][lecture_title] = {}
+                    lurl            = get_url % (course_id, video_id)
+                    lecture_json    = session.get(lurl).json()
+                    for formats in lecture_json:
+                        urls = formats.get('urls')
+                        cdn  = formats.get('name')
+                        if not isinstance(urls, dict):
+                            continue
+                        if cdn not in lynda_dict[chap_title][lecture_title]:
+                            lynda_dict[chap_title][lecture_title][cdn] = urls
+        return lynda_dict
