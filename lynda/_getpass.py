@@ -2,6 +2,7 @@
 import os
 import sys
 if os.name == 'nt':
+    import msvcrt
     from msvcrt import getch as _win_getch
 else:
     import tty
@@ -24,16 +25,15 @@ class GetPass:
         password = ""
         sys.stdout.write(prompt)
         sys.stdout.flush()
-        while True:
+        while 1:
             c = _win_getch() if os.name == 'nt' else self._unix_getch()
-            if c == '\r' or c == '\n':
+            if c == b"\r" or c == b"\n":
                 break
-            if c == '\003':
+            if c == "\003":
                 raise KeyboardInterrupt
-            if c == '\b':
-                c = ''
-            password += c
+            if c == b"\b":
+                c = ""
+            password += c.decode('utf-8')
             sys.stdout.write("*")
-            sys.stdout.flush()
-            
+            sys.stdout.flush()    
         return password

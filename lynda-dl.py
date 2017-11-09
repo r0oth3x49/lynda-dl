@@ -210,7 +210,7 @@ def main():
 
     if not options.username and not options.password:
         username = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Username : " + fg + sb
-        password = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Password : " + fc + sb
+        password = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Password : " + fg + sb
         email   = input(username) if version_info[:2] >= (3, 0) else raw_input(username)
         passwd  = getpass.getpass(prompt=password)
         print ("")
