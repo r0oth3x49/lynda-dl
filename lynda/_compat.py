@@ -34,6 +34,7 @@ logout      = "https://www.lynda.com/signout"
 course_url  = "https://www.lynda.com/ajax/player?courseId=%s&type=course"
 get_url     = "https://www.lynda.com/ajax/course/%s/%s/play"
 ex_url      = "https://www.lynda.com/ajax/course/%s/0/getupselltabs"
+cc_url      = "https://www.lynda.com/ajax/player?videoId={video_id}&type=transcript"
 user_agent  = "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20150101 Firefox/47.0 (Chrome)"
 std_headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20150101 Firefox/47.0 (Chrome)',
@@ -60,4 +61,5 @@ __ALL__ =[
     "compat_urlopen",
     "compat_opener",
     "user_agent",
+    "cc_url"
     ]

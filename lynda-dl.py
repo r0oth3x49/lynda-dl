@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import os
+import re
 import time
 import lynda
 import optparse
@@ -36,6 +37,15 @@ class LyndaDownload:
 
     def logout(self):
         extract_info.logout()
+
+    def generate_filename(self, title):
+        ok = re.compile(r'[^/]')
+
+        if os.name == "nt":
+            ok = re.compile(r'[^\\/:*?"<>|]')
+
+        filename = "".join(x if ok.match(x) else "_" for x in title)
+        return filename
 
     # Source taken from  http://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     def printProgress(self, iteration, total, fileSize='' , downloaded = '' , rate = '' ,suffix = '', barLength = 100):
@@ -83,7 +93,7 @@ class LyndaDownload:
             print(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fw + sd + "Try to run the Lynda-dl again...")
             exit(0)
         
-    def InfoExtractor(self, outto=None):
+    def InfoExtractor(self, outto=None, sub_only=False):
         current_dir = os.getcwd()
         print(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading webpage..")
         time.sleep(2)
@@ -122,22 +132,58 @@ class LyndaDownload:
                 i = 1
                 for lecture_name, _urls in sorted(videos_dict[chap].items()):
                     try:
-                        source  = _urls['EDGECAST']
+                        source  = _urls.get('EDGECAST')
                     except KeyError:
-                        source  = _urls['AKAMAI']
-                    try:
-                        _url    = source['720'] 
-                    except KeyError:
-                        _url    = source['360']
-                    if _url:
-                        print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading lecture : (%s of %s)" % (i, len(videos_dict[chap])))
-                        print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading (%s)" % (lecture_name))
-                        out = self.Downloader(_url, lecture_name, chapter_path)
-                        if out == 'already_exist':
-                            print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
+                        try:
+                            source  = _urls.get('AKAMAI')
+                        except:
+                            source = None
+
+                    if sub_only:
+                        if not source:
+                            _data         = _urls['en'].get('data')
+                            lecture_name  = self.generate_filename(lecture_name)
+                            filepath      = os.path.join(chapter_path, lecture_name)
+                            print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading lecture : (%s of %s)" % (i, len(videos_dict[chap])))
+                            print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading (%s)" % (lecture_name))
+                            if os.path.isfile(filepath):
+                                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
+                            else:
+                                with open(lecture_name, "w") as f:
+                                    f.write(str(_data))
+                                f.close()
+                                print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
                         else:
-                            print (fc + sd + "\n[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
-                        i += 1
+                            pass
+                    else:
+                        if not source:
+                            _data         = _urls['en'].get('data')
+                            lecture_name  = self.generate_filename(lecture_name)
+                            filepath      = os.path.join(chapter_path, lecture_name)
+                            print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading lecture : (%s of %s)" % (i, len(videos_dict[chap])))
+                            print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading (%s)" % (lecture_name))
+                            if os.path.isfile(filepath):
+                                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
+                            else:
+                                with open(lecture_name, "w") as f:
+                                    f.write(str(_data))
+                                f.close()
+                                print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
+                        else:
+                            try:
+                                _url    = source.get('720')
+                            except KeyError:
+                                _url    = source.get('360')
+                                
+                            if _url:
+                                print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading lecture : (%s of %s)" % (i, len(videos_dict[chap])))
+                                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading (%s)" % (lecture_name))
+                                out = self.Downloader(_url, lecture_name, chapter_path)
+                                if out == 'already_exist':
+                                    print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
+                                else:
+                                    print (fc + sd + "\n[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
+                    i += 1
                 j += 1
                 print ('')
                 os.chdir(current_dir)
@@ -166,7 +212,7 @@ def main():
     ban = banner()
     print (ban)
     us = '''%prog [-u (USERNAME/LIBRARY CARD NUMBER)][-p (PASSWORD/LIBRARY CARD PIN)]
-                   [-o ORGANIZATION] COURSE_URL [-d DIRECTORY]'''
+                   [-o ORGANIZATION] COURSE_URL [-s/--sub-only] [-d DIRECTORY]'''
     version = "%prog version 1.0"
     parser = optparse.OptionParser(usage=us,version=version,conflict_handler="resolve")
 
@@ -195,7 +241,13 @@ def main():
         "-o", "--organization", 
         action='store_true',
         dest='org',\
-        help="Organization that is registered at lynda.com.")
+        help="Organization, registered at Lynda.")
+    downloader.add_option(
+        "-s","--sub-only", 
+        action='store_true',
+        dest='sub_only',\
+        default=False,\
+        help="Download the captions/subtitle only")
     downloader.add_option(
         "-d","--directory", 
         action='store_true',
@@ -215,7 +267,7 @@ def main():
         passwd  = getpass.getpass(prompt=password)
         print ("")
         if options.org:
-            if options.output:
+            if options.output and not options.sub_only:
                 org         = args[0]
                 try:
                     url         = args[1]
@@ -229,8 +281,22 @@ def main():
                     else:
                         print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
                         exit(0)
+            elif options.output and options.sub_only:
+                org         = args[0]
+                try:
+                    url         = args[1]
+                except IndexError:
+                    parser.print_usage()
+                else:
+                    save_to     = args[2]
+                    if email and passwd:
+                        lynda =  LyndaDownload(url, email, passwd, org=org)
+                        lynda.InfoExtractor(outto=save_to, sub_only=True)
+                    else:
+                        print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
+                        exit(0)
                     
-            else:
+            elif not options.output and not options.sub_only:
                 org         = args[0]
                 try:
                     url         = args[1]
@@ -243,9 +309,22 @@ def main():
                     else:
                         print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
                         exit(0)
+            elif not options.output and options.sub_only:
+                org         = args[0]
+                try:
+                    url         = args[1]
+                except IndexError:
+                    parser.print_usage()
+                else:
+                    if email and passwd:
+                        lynda =  LyndaDownload(url, email, passwd, org=org)
+                        lynda.InfoExtractor(sub_only=True)
+                    else:
+                        print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
+                        exit(0)
                     
         else:            
-            if options.output:
+            if options.output and not options.sub_only:
                 try:
                     url         = args[0]
                 except IndexError:
@@ -258,8 +337,22 @@ def main():
                     else:
                         print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
                         exit(0)
+                        
+            elif options.output and options.sub_only:
+                try:
+                    url         = args[0]
+                except IndexError:
+                    parser.print_usage()
+                else:
+                    save_to     = args[1]
+                    if email and passwd:
+                        lynda       = LyndaDownload(url, email, passwd)
+                        lynda.InfoExtractor(outto=save_to, sub_only=True)
+                    else:
+                        print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
+                        exit(0)
                     
-            else:
+            elif not options.output and not options.sub_only:
                 try:
                     url         = args[0]
                 except IndexError:
@@ -268,6 +361,19 @@ def main():
                     if email and passwd:
                         lynda =  LyndaDownload(url, email, passwd)
                         lynda.InfoExtractor()
+                    else:
+                        print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
+                        exit(0)
+                        
+            elif not options.output and options.sub_only:
+                try:
+                    url         = args[0]
+                except IndexError:
+                    parser.print_usage()
+                else:
+                    if email and passwd:
+                        lynda =  LyndaDownload(url, email, passwd)
+                        lynda.InfoExtractor(sub_only=True)
                     else:
                         print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required..")
                         exit(0)

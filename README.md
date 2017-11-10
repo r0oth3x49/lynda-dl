@@ -16,8 +16,8 @@
 	
 ### Tested on
 
-- Windows 7/8
-- Kali linux (2017.1)
+- Windows 7/8/8.1
+- Kali linux (2017.2)
 
 	 
 ### Download lynda-dl
@@ -70,7 +70,7 @@ You can download the latest version of lynda-dl by cloning the GitHub repository
 Author: Nasir khan (<a href="http://r0oth3x49.herokuapp.com/">r0ot h3x49</a>)
 
 Usage: lynda-dl.py [-u (USERNAME/LIBRARY CARD NUMBER)][-p (PASSWORD/LIBRARY CARD PIN)]
-                   [-o ORGANIZATION] COURSE_URL [-d DIRECTORY]
+                   [-o ORGANIZATION] COURSE_URL [-s/--sub-only] [-d DIRECTORY]
 
 Options:
   General:
@@ -80,7 +80,8 @@ Options:
   Advance:
     -u, --username      Username or Library Card Number.
     -p, --password      Password or Library Card Pin.
-    -o, --organization  Organization that is registered at lynda.com.
+    -o, --organization  Organization, registered at Lynda.
+    -s, --sub-only      Download the captions/subtitle only
     -d, --directory     Output directory where the videos will be saved,
                         default is current directory.
   

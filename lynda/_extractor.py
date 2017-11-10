@@ -9,6 +9,7 @@ from ._compat import (
     re,
     logout,
     ex_url,
+    cc_url,
     get_url,
     requests,
     org_url,
@@ -24,6 +25,8 @@ early_py_version = sys.version_info[:2] < (2, 7)
 session = requests.Session()
 
 class LyndaInfoExtractor:
+
+    _TIMECODE_REGEX = r'\[(?P<timecode>\d+:\d+:\d+[\.,]\d+)\]'
 
     def match_id(self, url):
         course_name = url.split("/")[-2]
@@ -170,6 +173,35 @@ class LyndaInfoExtractor:
         bar             = '=' * filledLength + '-' * (barLength - filledLength)
         sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + 'Extracting ' + fg + sb + '(' + str(fileSize) + '/' + str(downloaded) + ') |' + bar + fg + sb + '| ' + percents + '%                                      \r')
         sys.stdout.flush()
+
+    def _fix_subtitles(self, subs):
+        srt = ''
+        seq_counter = 0
+        for pos in range(0, len(subs) - 1):
+            seq_current = subs[pos]
+            m_current = re.match(self._TIMECODE_REGEX, seq_current['Timecode'])
+            if m_current is None:
+                continue
+            seq_next = subs[pos + 1]
+            m_next = re.match(self._TIMECODE_REGEX, seq_next['Timecode'])
+            if m_next is None:
+                continue
+            appear_time = m_current.group('timecode')
+            disappear_time = m_next.group('timecode')
+            text = seq_current['Caption'].strip()
+            if text:
+                seq_counter += 1
+                srt += '%s\r\n%s --> %s\r\n%s\r\n\r\n' % (seq_counter, appear_time, disappear_time, text)
+        if srt:
+            return srt
+
+    def _get_subtitles(self, video_id):
+        url =  cc_url.format(video_id=video_id)
+        subs = session.get(url).json()
+        if subs:
+            return {'en' : {'data': self._fix_subtitles(subs)}}
+        else:
+            return {}
         
 
     def real_extract(self, url, course_name):
@@ -186,6 +218,7 @@ class LyndaInfoExtractor:
         sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Found (%s) lectures\n" % (num_lect))
         counter = 0
 
+        
         for chapter in course["Chapters"]:
             chap_num        = chapter.get('ChapterIndex')
             temp_           = ''.join([i if ord(i) < 128 else ' ' for i in chapter.get('Title')])
@@ -204,10 +237,14 @@ class LyndaInfoExtractor:
                 lect_num        = video.get('VideoIndex')
                 lecture         = ''.join([i if ord(i) < 128 else ' ' for i in video.get('Title')])
                 lecture_title   = "{0:03d} {1!s}".format(lect_num, lecture)
+                captions        = self._get_subtitles(video_id)
                 if lect_num not in lynda_dict[chap_title]:
                     lynda_dict[chap_title][lecture_title] = {}
                     lurl            = get_url % (course_id, video_id)
                     lecture_json    = session.get(lurl).json()
+                    if isinstance(captions, dict) and len(captions) != 0:
+                        caption_title = "{0:03d}-{1!s}.srt".format(lect_num, lecture.replace(" ", "-"))
+                        lynda_dict[chap_title][caption_title] = captions
                     for formats in lecture_json:
                         urls = formats.get('urls')
                         cdn  = formats.get('name')
