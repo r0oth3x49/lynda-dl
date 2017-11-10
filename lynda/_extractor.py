@@ -243,7 +243,7 @@ class LyndaInfoExtractor:
                     lurl            = get_url % (course_id, video_id)
                     lecture_json    = session.get(lurl).json()
                     if isinstance(captions, dict) and len(captions) != 0:
-                        caption_title = "{0:03d}-{1!s}.srt".format(lect_num, lecture.replace(" ", "-"))
+                        caption_title = "{0:03d} {1!s}.srt".format(lect_num, lecture)
                         lynda_dict[chap_title][caption_title] = captions
                     for formats in lecture_json:
                         urls = formats.get('urls')
