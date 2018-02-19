@@ -262,9 +262,9 @@ def main():
 
     if not options.username and not options.password:
         username = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Username : " + fg + sb
-        password = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Password : " + fg + sb
-        email   = input(username) if version_info[:2] >= (3, 0) else raw_input(username)
-        passwd  = getpass.getpass(prompt=password)
+        password = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Password : " + fc + sb
+        email    = getpass.getuser(prompt=username)
+        passwd   = getpass.getpass(prompt=password)
         print ("")
         if options.org:
             if options.output and not options.sub_only:
