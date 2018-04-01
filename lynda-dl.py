@@ -149,7 +149,8 @@ class LyndaDownload:
                             if os.path.isfile(filepath):
                                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
                             else:
-                                with open(lecture_name, "w") as f:
+                                #Encoding Support to prevent UnicodeEncodeError
+                                with open(lecture_name, "w", encoding='utf8') as f:
                                     f.write(str(_data))
                                 f.close()
                                 print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
@@ -165,7 +166,8 @@ class LyndaDownload:
                             if os.path.isfile(filepath):
                                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
                             else:
-                                with open(lecture_name, "w") as f:
+                                #Encoding Support to prevent UnicodeEncodeError
+                                with open(lecture_name, "w", encoding='utf8') as f:
                                     f.write(str(_data))
                                 f.close()
                                 print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
