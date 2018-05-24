@@ -97,7 +97,7 @@ class LyndaInfoExtractor:
                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "failed to extract json url for organization ..")
                 exit(0)
             else:
-                url, referer = resp.get('RedirectUrl').replace('http' , 'https'), resp.get('RedirectUrl')
+                url, referer = resp.get('RedirectUrl').replace('http', 'https') if not 'https' in resp.get('RedirectUrl') else resp.get('RedirectUrl'), resp.get('RedirectUrl')
                 return url, referer
             
 
