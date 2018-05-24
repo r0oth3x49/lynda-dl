@@ -26,7 +26,8 @@ else:
     uni, pyver = unicode, 2
 
 
-org_url     = "https://www.lynda.com/portal/sip?org={organization}"
+org_url     = "https://www.lynda.com/signin/organization"
+xorg_url    = "https://www.lynda.com/ajax/signin/organization"
 sigin_url   = 'https://www.lynda.com/signin'
 passw_url   = 'https://www.lynda.com/signin/password'
 user_url    = 'https://www.lynda.com/signin/user'
@@ -61,5 +62,7 @@ __ALL__ =[
     "compat_urlopen",
     "compat_opener",
     "user_agent",
-    "cc_url"
+    "cc_url",
+    "xorg_url",
+	"pyver"
     ]

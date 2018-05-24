@@ -2,6 +2,7 @@
 
 import os
 import sys
+import json
 import time
 from pprint import pprint
 from .colorized import *
@@ -19,7 +20,13 @@ from ._compat import (
     course_url,
     std_headers,
     compat_urlparse,
+    xorg_url,
     )
+from ._sanitize import (
+            slugify,
+            sanitize,
+            SLUG_OK
+)
 
 early_py_version = sys.version_info[:2] < (2, 7)
 session = requests.Session()
@@ -32,6 +39,10 @@ class LyndaInfoExtractor:
         course_name = url.split("/")[-2]
         if course_name:
             return course_name
+
+    def _sanitize(self, unsafetext):
+        text = sanitize(slugify(unsafetext, lower=False, spaces=True, ok=SLUG_OK + '()-_-'))
+        return text
 
     def _get_org_csrf_token(self, login_url):
         try:
@@ -69,14 +80,35 @@ class LyndaInfoExtractor:
 
         return response, action_url
 
+    def _extract_organization_url(self, org):
+        try:
+            resp = session.get(org_url).text
+            json_data = json.loads(re.search(r'lynda\s*=\s*(?P<data>{.+?});', resp).group(1))
+        except:
+            print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "failed to extract csrf token for organization ..")
+            exit(0)
+        else:
+            headers = {'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20150101 Firefox/47.0 (Chrome)',
+                       '-_-' : json_data.get('-_-'), 'Referer' : org_url, 'X-Requested-With' : 'XMLHttpRequest'}
+            data = {'org' : org}
+            try:
+                resp = session.post(xorg_url, data=data, headers=headers).json()
+            except:
+                print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "failed to extract json url for organization ..")
+                exit(0)
+            else:
+                url, referer = resp.get('RedirectUrl').replace('http' , 'https'), resp.get('RedirectUrl')
+                return url, referer
+            
+
     def login(self, user, passw, org=None):
         if org:
             sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as organization : " + fm + sb +"(%s)" % (org) +  fg + sb +"...\n")
             organization = org
             lib_card_num = user
             lib_card_pin = passw
-            login_url    = org_url.format(organization=organization)
-            csrftoken = self._get_org_csrf_token(login_url)
+            login_url, referer = self._extract_organization_url(organization)
+            csrftoken = self._get_org_csrf_token(referer)
             login_data   = dict(
                                     libraryCardNumber=str(lib_card_num),
                                     libraryCardPin=str(lib_card_pin),
@@ -85,15 +117,16 @@ class LyndaInfoExtractor:
                                     currentView="login",
                                     seasurf=csrftoken
                                 )
-            std_headers['Referer'] = login_url
+            std_headers['Referer'] = referer
             response    = session.post(login_url, data=login_data, headers=std_headers)
             response_text = response.text
             try:
-                message      = response_text.split('<span class="account-name" data-qa="eyebrow_account_menu">')[1].split('</span>')[0]
-            except IndexError:
+                name = re.search(r'data-qa="eyebrow_account_menu">(.*)</span>', response_text).group(1)#response_text.split('<span class="account-name" data-qa="eyebrow_account_menu">')[1].split('</span>')[0]
+            except:
                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "Logged in failed.")
                 sys.exit(0)
             else:
+                # print(name)
                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Logged in successfully.")
         else:
             username    = user
@@ -221,7 +254,7 @@ class LyndaInfoExtractor:
         
         for chapter in course["Chapters"]:
             chap_num        = chapter.get('ChapterIndex')
-            temp_           = ''.join([i if ord(i) < 128 else ' ' for i in chapter.get('Title')])
+            temp_           = self._sanitize(chapter.get('Title'))
             temp_name       = self._generate_dirname(temp_)
             chap            = (temp_name.split('.', 1)[-1] if '.' else temp_name)
             chap_title      = "{0:02d} {1!s}".format(chap_num, chap)
@@ -235,7 +268,7 @@ class LyndaInfoExtractor:
                 self.Progress(counter, num_lect, fileSize = str(num_lect), downloaded = str(counter), barLength = 40)
                 video_id        = video.get('ID')
                 lect_num        = video.get('VideoIndex')
-                lecture         = ''.join([i if ord(i) < 128 else ' ' for i in video.get('Title')])
+                lecture         = self._sanitize(video.get('Title'))
                 lecture_title   = "{0:03d} {1!s}".format(lect_num, lecture)
                 captions        = self._get_subtitles(video_id)
                 if lect_num not in lynda_dict[chap_title]:

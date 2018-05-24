@@ -12,6 +12,7 @@ from sys import *
 from pprint import pprint
 
 from lynda.colorized import *
+from lynda._compat import pyver
 from lynda.colorized.banner import banner
 
 
@@ -149,9 +150,14 @@ class LyndaDownload:
                             if os.path.isfile(filepath):
                                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
                             else:
-                                with open(lecture_name, "w") as f:
-                                    f.write(str(_data))
-                                f.close()
+                                if pyver == 3:
+                                    with open(lecture_name, "w", encoding="utf-8") as f:
+                                        f.write(_data)
+                                    f.close()
+                                else:
+                                    with open(lecture_name, "w") as f:
+                                        f.write(_data)
+                                    f.close()
                                 print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
                         else:
                             pass
@@ -165,9 +171,14 @@ class LyndaDownload:
                             if os.path.isfile(filepath):
                                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
                             else:
-                                with open(lecture_name, "w") as f:
-                                    f.write(str(_data))
-                                f.close()
+                                if pyver == 3:
+                                    with open(lecture_name, "w", encoding="utf-8") as f:
+                                        f.write(_data)
+                                    f.close()
+                                else:
+                                    with open(lecture_name, "w") as f:
+                                        f.write(_data)
+                                    f.close()
                                 print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
                         else:
                             try:
