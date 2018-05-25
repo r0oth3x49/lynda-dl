@@ -1,7 +1,7 @@
 # lynda-dl
 **A cross-platform python based utility to download courses from lynda.com for personal offline use.**
 
-[![lynda-dl.png](https://s2.postimg.org/7nnfdy4l5/lynda-dl.png)](https://postimg.org/image/mwdcrpy9h/)
+[![lynda-dl.png](https://s26.postimg.cc/upmyj37tl/lynda-dl.png)](https://postimg.cc/image/937y22991/)
 
 ### Requirements
 
