@@ -39,6 +39,7 @@ class Downloader:
 
     def download(self, url, title, filepath="", quiet=False, callback=lambda *x: None):
         savedir = filename = ""
+        retVal  = {}
 
         if filepath and os.path.isdir(filepath):
             savedir, filename = filepath, self._generate_filename(title)
@@ -52,9 +53,10 @@ class Downloader:
         filepath = os.path.join(savedir, filename)
 
         if os.path.isfile(filepath):
-            return 'EXISTS'
+            retVal = {"status" : "True", "msg" : "already downloaded"}
+            return retVal
 
-        temp_filepath = filepath + ".temp"
+        temp_filepath = filepath + ".part"
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'KB/s].  ETA: [{:.0f} secs]')
@@ -68,9 +70,14 @@ class Downloader:
             req = compat_request(url, headers={'user-agent':user_agent})
             response = compat_urlopen(req)
         except compat_httperr as e:
-            return str(e.code)
+            if e.code == 401:
+                retVal  =   {"status" : "False", "msg" : "Lynda Says (HTTP Error 401 : Unauthorized)"}
+            else:
+                retVal  =   {"status" : "False", "msg" : "HTTPError-{} : download link is expired ..".format(e.code)}
+            return retVal
         except compat_urlerr as e:
-            return str(e)
+            retVal  =   {"status" : "False", "msg" : "URLError : either your internet connection is not working or server aborted the request"}
+            return retVal
         else:
             total = int(response.info()['Content-Length'].strip())
             chunksize, bytesdone, t0 = 16384, 0, time.time()
@@ -90,8 +97,15 @@ class Downloader:
                                             ("Range", "bytes=%s-" % offset)]
                 try:
                     response = resume_opener.open(url)
-                except (compat_urlerr, compat_httperr) as e:
-                    return str(e)
+                except compat_urlerr as e:
+                    retVal  =   {"status" : "False", "msg" : "URLError : either your internet connection is not working or server aborted the request"}
+                    return retVal
+                except compat_httperr as e:
+                    if e.code == 401:
+                        retVal  =   {"status" : "False", "msg" : "Lynda Says (HTTP Error 401 : Unauthorized)"}
+                    else:
+                        retVal  =   {"status" : "False", "msg" : "HTTPError-{} : download link is expired ..".format(e.code)}
+                    return retVal
                 else:
                     bytesdone = offset
 
@@ -102,8 +116,17 @@ class Downloader:
                 elapsed = time.time() - t0
                 bytesdone += len(chunk)
                 if elapsed:
-                    rate = ((float(bytesdone) - float(offset)) / 1024.0) / elapsed
-                    eta  = (total - bytesdone) / (rate * 1024)
+                    try:
+                        rate = ((float(bytesdone) - float(offset)) / 1024.0) / elapsed
+                        eta  = (total - bytesdone) / (rate * 1024.0)
+                    except ZeroDivisionError as e:
+                        outfh.close()
+                        try:
+                            os.unlink(temp_filepath)
+                        except Exception as e:
+                            pass
+                        retVal = {"status" : "False", "msg" : "ZeroDivisionError : it seems, lecture has malfunction or is zero byte(s) .."}
+                        return retVal
                 else:
                     rate = 0
                     eta = 0
@@ -122,11 +145,8 @@ class Downloader:
 
             if self._active:
                 os.rename(temp_filepath, filepath)
-                return filepath
-            
+                retVal = {"status" : "True", "msg" : "download"}
             else:
                 outfh.close()
-                return temp_filepath
-
-
-    
+                retVal = {"status" : "True", "msg" : "download"}
+        return retVal

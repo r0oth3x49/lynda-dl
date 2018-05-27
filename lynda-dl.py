@@ -87,12 +87,18 @@ class LyndaDownload:
 
     def Downloader(self, url, title, path):
         out = course_dl.download(url, title, filepath=path, quiet=True, callback=self.Download)
-        if 'EXISTS' in out:
-            return 'already_exist'
-        elif out == '401':
-            print(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fr + sb + "Lynda Says (HTTP Error 401 : Unauthorized)")
-            print(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fw + sd + "Try to run the Lynda-dl again...")
-            exit(0)
+        if isinstance(out, dict) and len(out) > 0:
+            msg     = out.get('msg')
+            status  = out.get('status')
+            if status == 'True':
+                return msg
+            else:
+                if msg == 'Lynda Says (HTTP Error 401 : Unauthorized)':
+                    print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Lynda Says (HTTP Error 401 : Unauthorized)")
+                    print (fc + sd + "[" + fw + sb + "*" + fc + sd + "] : " + fw + sd + "Try to run the lynda-dl again...")
+                    exit(0)
+                else:
+                    return msg
         
     def InfoExtractor(self, outto=None, sub_only=False):
         current_dir = os.getcwd()
@@ -189,11 +195,14 @@ class LyndaDownload:
                             if _url:
                                 print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading lecture : (%s of %s)" % (i, len(videos_dict[chap])))
                                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading (%s)" % (lecture_name))
-                                out = self.Downloader(_url, lecture_name, chapter_path)
-                                if out == 'already_exist':
+                                msg = self.Downloader(_url, lecture_name, chapter_path)
+                                if msg == 'already downloaded':
                                     print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
-                                else:
+                                elif msg == 'download':
                                     print (fc + sd + "\n[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
+                                else:
+                                    print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fc + sb + "(download skipped).")
+                                    print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sd + "{}".format(msg))
                     i += 1
                 j += 1
                 print ('')
@@ -206,11 +215,14 @@ class LyndaDownload:
             for file_name, url in sorted(fileZip.items()):
                 print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading file : (%s of %s)" % (j, len(fileZip)))
                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading (%s)" % (file_name))
-                out = self.Downloader(url, file_name, course_name)
-                if out == 'already_exist':
-                    print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "File : '%s' " % (file_name) + fy + sb + "(already downloaded).")
+                msg = self.Downloader(url, file_name, course_name)
+                if msg == 'already downloaded':
+                    print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fy + sb + "(already downloaded).")
+                elif msg == 'download':
+                    print (fc + sd + "\n[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
                 else:
-                    print (fc + sd + "\n[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (file_name))
+                    print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture : '%s' " % (lecture_name) + fc + sb + "(download skipped).")
+                    print (fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sd + "{}".format(msg))
                 j += 1
 
                 print ('')
