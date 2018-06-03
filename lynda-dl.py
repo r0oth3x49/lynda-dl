@@ -138,16 +138,9 @@ class LyndaDownload:
                 print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fc + sd + "Found ('%s') lecture(s)." % (len(videos_dict[chap])))
                 i = 1
                 for lecture_name, _urls in sorted(videos_dict[chap].items()):
-                    try:
-                        source  = _urls.get('EDGECAST')
-                    except KeyError:
-                        try:
-                            source  = _urls.get('AKAMAI')
-                        except:
-                            source = None
-
+                    source_ak, source_ed = _urls.get('AKAMAI') , _urls.get('EDGECAST')
                     if sub_only:
-                        if not source:
+                        if not source_ak or not source_ed:
                             _data         = _urls['en'].get('data')
                             lecture_name  = self.generate_filename(lecture_name)
                             filepath      = os.path.join(chapter_path, lecture_name)
@@ -168,7 +161,7 @@ class LyndaDownload:
                         else:
                             pass
                     else:
-                        if not source:
+                        if not source_ak or not source_ed:
                             _data         = _urls['en'].get('data')
                             lecture_name  = self.generate_filename(lecture_name)
                             filepath      = os.path.join(chapter_path, lecture_name)
@@ -187,11 +180,9 @@ class LyndaDownload:
                                     f.close()
                                 print (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Downloaded  (%s)" % (lecture_name))
                         else:
-                            try:
-                                _url    = source.get('720')
-                            except KeyError:
-                                _url    = source.get('360')
-                                
+                            _url = source_ak.get('720') or source_ed.get('720')
+                            if not _url:
+                                _url = source_ak.get('360') or source_ed.get('360')
                             if _url:
                                 print (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading lecture : (%s of %s)" % (i, len(videos_dict[chap])))
                                 print (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Downloading (%s)" % (lecture_name))
