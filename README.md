@@ -1,7 +1,8 @@
+[![GitHub release](https://img.shields.io/badge/release-v0.2-brightgreen.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/releases/tag/v0.2)
 [![GitHub stars](https://img.shields.io/github/stars/r0oth3x49/lynda-dl.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/r0oth3x49/lynda-dl.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/network)
 [![GitHub issues](https://img.shields.io/github/issues/r0oth3x49/lynda-dl.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/issues)
-
+[![GitHub license](https://img.shields.io/github/license/r0oth3x49/lynda-dl.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/blob/master/LICENSE)
 
 # lynda-dl
 **A cross-platform python based utility to download courses from lynda for personal offline use.**
