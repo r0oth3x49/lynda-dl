@@ -1,11 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-__version__ = "0.2"
-__author__  = "Nasir Khan (r0ot h3x49)"
-__license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2018 Nasir Khan (r0ot h3x49)'
-
 '''
 
 Author 	: Nasir Khan (r0ot h3x49)
@@ -28,5 +23,16 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 '''
 
+from ._internal import InternLyndaCourse as Lynda
 
-from ._lynda import course
+
+def course(url, username='', password='', organization='', basic=True, callback=None):
+    """Returns lynda course instance.
+
+    @params:
+        url      : Lynda course url required : type (string).
+        username : Lynda email account required : type (string).
+        password : Lynda account password required : type (string)
+        organization : Lynda organization name optional : type (string)
+    """
+    return Lynda(url, username, password, organization, basic, callback)

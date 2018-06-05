@@ -1,10 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-__version__ = "0.2"
-__author__  = "Nasir Khan (r0ot h3x49)"
-__license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2018 Nasir Khan (r0ot h3x49)'
 
 '''
 
@@ -28,5 +22,5 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 '''
 
-
-from ._lynda import course
+from .colors import *
+from . import banner

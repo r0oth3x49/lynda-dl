@@ -1,68 +1,127 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
+'''
 
+Author  : Nasir Khan (r0ot h3x49)
+Github  : https://github.com/r0oth3x49
+License : MIT
+
+
+Copyright (c) 2018 Nasir Khan (r0ot h3x49)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+'''
+
+import re
+import os
+import sys
+import time
+import json
+import requests
 if sys.version_info[:2] >= (3, 0):
-    import requests,re
+
+    import ssl
     import urllib.request as compat_urllib
-    from urllib.request import Request as compat_request
-    from urllib.request import urlopen as compat_urlopen
+
     from urllib.error import HTTPError as compat_httperr
     from urllib.error import URLError as compat_urlerr
     from urllib.parse import urlparse as compat_urlparse
+    from urllib.request import Request as compat_request
+    from urllib.request import urlopen as compat_urlopen
     from urllib.request import build_opener as compat_opener
-    uni, pyver = str, 3
+    from html.parser import HTMLParser as compat_HTMLParser
+    from requests.exceptions import ConnectionError as conn_error
+
+    encoding, pyver = str, 3
+    ssl._create_default_https_context = ssl._create_unverified_context
     
 else:
-    import requests,re
+    
     import urllib2 as compat_urllib
+
     from urllib2 import Request as compat_request
     from urllib2 import urlopen as compat_urlopen
     from urllib2 import URLError as compat_urlerr
     from urllib2 import HTTPError as compat_httperr
-    from urllib2 import urlparse as compat_urlparse
     from urllib2 import build_opener as compat_opener
-    uni, pyver = unicode, 2
+    from urlparse import urlparse as compat_urlparse
+    from HTMLParser import HTMLParser as compat_HTMLParser
+    from requests.exceptions import ConnectionError as conn_error
+
+    encoding, pyver = unicode, 2
 
 
-org_url     = "https://www.lynda.com/signin/organization"
-xorg_url    = "https://www.lynda.com/ajax/signin/organization"
-sigin_url   = 'https://www.lynda.com/signin'
-passw_url   = 'https://www.lynda.com/signin/password'
-user_url    = 'https://www.lynda.com/signin/user'
-logout      = "https://www.lynda.com/signout"
-course_url  = "https://www.lynda.com/ajax/player?courseId=%s&type=course"
-get_url     = "https://www.lynda.com/ajax/course/%s/%s/play"
-ex_url      = "https://www.lynda.com/ajax/course/%s/0/getupselltabs"
-cc_url      = "https://www.lynda.com/ajax/player?videoId={video_id}&type=transcript"
-user_agent  = "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20150101 Firefox/47.0 (Chrome)"
-std_headers = {
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20150101 Firefox/47.0 (Chrome)',
-    'X-Requested-With': 'XMLHttpRequest',
-    'Host': 'www.lynda.com'}
+NO_DEFAULT = object()
 
-__ALL__ =[
-    "compat_request",
-    "requests",
-    "logout",
-    "re",
-    "compat_urllib",
-    "compat_urlparse",
-    "compat_urlerr",
-    "compat_httperr",
-    "sigin_url",
-    "passw_url",
-    "user_url",
-    "org_url",
-    "course_url",
-    "get_url",
-    "ex_url",
-    "std_headers",
-    "compat_urlopen",
-    "compat_opener",
-    "user_agent",
-    "cc_url",
-    "xorg_url",
-	"pyver"
+# endpoints for login via email / password
+USER_LOGIN_URL = "https://www.lynda.com/signin"
+AJAX_USERNAME = "https://www.lynda.com/signin/user"
+AJAX_PASSWORD = "https://www.lynda.com/signin/password"
+
+# endpoints for login via organiztion library card & pin
+ORG_LOGIN_URL = "https://www.lynda.com/signin/organization"
+AJAX_ORGNIZATION = "https://www.lynda.com/ajax/signin/organization"
+
+# endpoint for logout ..
+LOGOUT_URL = "https://www.lynda.com/signout"
+
+
+COURSE_URL = "https://www.lynda.com/ajax/player?courseId={course_id}&type=course"
+VIDEO_URL = "https://www.lynda.com/ajax/course/{course_id}/{video_id}/play"
+CAPTIONS_URL = "https://www.lynda.com/ajax/player?videoId={video_id}&type=transcript"
+EXERCISE_FILES_URL = "https://www.lynda.com/ajax/course/{course_id}/0/getupselltabs"
+
+
+HEADERS = {
+            'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15',
+            'X-Requested-With'  : 'XMLHttpRequest',
+            'Host': 'www.lynda.com'
+            }
+
+
+__ALL__ = [
+    're',
+    'os',
+    'sys',
+    'time',
+    'json',
+    'pyver',
+    'encoding',
+    'requests',
+    'conn_error',
+    'compat_urlerr',
+    'compat_opener',
+    'compat_urllib',
+    'compat_urlopen',
+    'compat_request',
+    'compat_httperr',
+    'compat_urlparse',
+    'compat_HTMLParser',
+    'HEADERS',
+    'NO_DEFAULT',
+
+    'USER_LOGIN_URL',
+    'AJAX_USERNAME',
+    'AJAX_PASSWORD',
+
+    'ORG_LOGIN_URL',
+    'AJAX_ORGNIZATION',
+
+    'LOGOUT_URL',
+
+    'COURSE_URL',
+    'VIDEO_URL',
+    'CAPTIONS_URL',
+    'EXERCISE_FILES_URL',
     ]

@@ -1,10 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-__version__ = "0.2"
-__author__  = "Nasir Khan (r0ot h3x49)"
-__license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2018 Nasir Khan (r0ot h3x49)'
 
 '''
 
@@ -28,5 +22,21 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 '''
 
+from .colors import *
 
-from ._lynda import course
+def banner():
+    banner = """%s%s
+
+ oooo                                .o8                      .o8  oooo    
+ `888                               "888                     "888  `888    
+  888  oooo    ooo ooo. .oo.    .oooo888   .oooo.        .oooo888   888    
+%s%s  888   `88.  .8'  `888P"Y88b  d88' `888  `P  )88b      d88' `888   888%s%s    
+%s%s  888    `88..8'    888   888  888   888   .oP"888 8888 888   888   888%s%s    
+  888     `888'     888   888  888   888  d8(  888      888   888   888    
+ o888o     .8'     o888o o888o `Y8bod88P" `Y888""8o     `Y8bod88P" o888o   
+       .o..P'                                                                  
+       `Y8P'\t\t\t\t%s%sVersion : %s%s0.2\n\t\t\t\t\t%s%sAuthor  : %s%sNasir Khan (r0ot h3x49)\n\t\t\t\t\t%s%sGithub  : %s%shttps://github.com/r0oth3x49
+
+
+""" % (fc, sb, fm, sb, fc, sb, fm, sb, fc, sb, fy,sb, fg, sd, fy,sb, fg, sd, fy,sb, fg, sd)
+    return banner
