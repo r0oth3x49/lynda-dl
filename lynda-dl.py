@@ -173,7 +173,7 @@ class Lynda(ProgressBar):
 			chapter_title = chapter.title
 			lectures = chapter.get_lectures()
 			lectures_count = chapter.lectures
-			filepath = "%s\\%s" % (course_path, chapter_title) if os.name == 'nt' else "%s/%s" % (course_path, chapter_title)
+			filepath = "%s\\%s" % (course_path, chapter_title.strip()) if os.name == 'nt' else "%s/%s" % (course_path, chapter_title.strip())
 			status = course.create_chapter(filepath=filepath)
 			sys.stdout.write (fc + sd + "\n[" + fm + sb + "*" + fc + sd + "] : " + fm + sb + "Downloading chapter : ({index} of {total})\n".format(index=chapter_index, total=total_chapters))
 			sys.stdout.write (fc + sd + "[" + fw + sb + "+" + fc + sd + "] : " + fw + sd + "Chapter (%s)\n" % (chapter_title))
