@@ -176,6 +176,9 @@ class Lynda(ProgressBar):
                     'subtitle_data' : None,
                     }
 
+    def _max(self, data):
+        return {'url' : [x['url'] for x in data if x['size'] == max([x['size'] for x in data])][0]}
+
     def _get_max_stream(self, streams):
         cl = 'content-length'
         try:
@@ -194,8 +197,7 @@ class Lynda(ProgressBar):
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
         if play and isinstance(play, list):
-            _stream_720 = [{'url' : s['urls'].get('720')} for s in play]
-            _max_stream = max(map(self._get_max_stream, _stream_720))
+            _max_stream = self._max(list(map(self._get_max_stream, [{'url' : s['urls'].get('720')} for s in play])))
             cdn = 'akamai' if 'akamaihd.net' in _max_stream.get('url') else 'edgecast'
             _data_720 = {'type' : cdn, 'height' : 720, 'width' : 1280, 'extension' : 'mp4', 'download_url' : _max_stream.get('url')}
             _temp.append(_data_720)
