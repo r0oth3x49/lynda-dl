@@ -55,6 +55,8 @@ class InternLyndaCourse(LyndaCourse, Lynda):
             self._title             =       self._info['course_title']
             self._chapters_count    =       self._info['total_chapters']
             self._total_lectures    =       self._info['total_lectures']
+            self._description       =       self._info['description']
+            self._short_description =       self._info['short_description']
             self._chapters          =       [InternLyndaChapter(z) for z in self._info['chapters']]
             sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to logout now...\n")
             self._logout()

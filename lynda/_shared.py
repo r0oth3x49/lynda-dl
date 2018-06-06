@@ -53,6 +53,8 @@ class LyndaCourse(object):
         self._title = None
         self._chapters_count = None
         self._total_lectures = None
+        self._description = None
+        self._short_description = None
 
         self._chapters = []
         self._assets = {}
@@ -93,10 +95,35 @@ class LyndaCourse(object):
             self._fetch_course()
         return self._total_lectures
 
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def short_description(self):
+        return self._short_description
+    
+
     def get_chapters(self):
         if not self._chapters:
             self._fetch_course()
         return self._chapters
+
+    def course_description(self, filepath):
+        self.create_chapter(filepath=filepath)
+        description_path = "%s\\%s-description.txt" % (filepath, self.title) if os.name == 'nt' else "%s/%s-description.txt" % (filepath, self.title)
+        data = '''-------------------------------
+  - Description
+-------------------------------
+ %s
+
+------------------------------
+  - Short Description
+------------------------------
+ %s''' % (self.description, self.short_description)
+        with open(description_path, 'w') as f:
+            f.write(data)
+        f.close()
 
     def create_chapter(self, filepath=''):
         try:

@@ -245,6 +245,8 @@ class Lynda(ProgressBar):
 
         _lynda['course_id'] = course_json.get('ID') or course_id
         _lynda['course_title'] = self._sanitize(self._clean(course_json.get('Title'))) or course_name
+        _lynda['description'] = course_json.get('Description')
+        _lynda['short_description'] = course_json.get('ShortDescription')
         assets = self._extract_assets(course_id)
         _lynda['asset'] = assets
         _lynda['chapters'] = []

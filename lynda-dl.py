@@ -166,7 +166,7 @@ class Lynda(ProgressBar):
 		else:
 			path = os.getcwd()
 			course_path = "%s\\%s" % (path, course_name) if os.name == 'nt' else "%s/%s" % (path, course_name)
-
+		course.course_description(filepath=course_path)
 		for chapter in chapters:
 			chapter_id = chapter.id
 			chapter_index = chapter.index
