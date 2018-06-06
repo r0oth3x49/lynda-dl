@@ -81,38 +81,45 @@ You can download the latest version of lynda-dl by cloning the GitHub repository
 
 ***Download course using user credentials***
 
-    python lynda-dl.py https://www.lynda.com/COURSE_NAME/ID.html
+    python lynda-dl.py COURSE_URL
   
 ***OR***
 
-    python lynda-dl.py -u user@domain.com -p p4ssw0rd https://www.lynda.com/COURSE_NAME/ID.html
+    python lynda-dl.py -u user@domain.com -p p4ssw0rd COURSE_URL
   
 ***Download course using organization's library card***
 
-    python lynda-dl.py -o organization https://www.lynda.com/COURSE_NAME/ID.html
+    python lynda-dl.py -o organization COURSE_URL
   
 ***OR***
 
-    python lynda-dl.py -u library_card_num -p library_card_pin -o organization https://www.lynda.com/COURSE_NAME/ID.html
+    python lynda-dl.py -u library_card_num -p library_card_pin -o organization COURSE_URL
   
   
 ***Download course to a specific location using user credentials***
 
-    python lynda-dl.py https://www.lynda.com/COURSE_NAME/ID.html -d "/path/to/directory/"
+    python lynda-dl.py COURSE_URL -d "/path/to/directory/"
   
 ***OR***
 
-    python lynda-dl.py -u user@domain.com -p p4ssw0rd https://www.lynda.com/COURSE_NAME/ID.html -d "/path/to/directory/"
+    python lynda-dl.py -u user@domain.com -p p4ssw0rd COURSE_URL -d "/path/to/directory/"
 
   
 ***Download course to a specific location using organization's library card***
 
-    python lynda-dl.py -o organization https://www.lynda.com/COURSE_NAME/ID.html -d "/path/to/directory/"
+    python lynda-dl.py -o organization COURSE_URL -d "/path/to/directory/"
   
 ***OR***
 
-    python lynda-dl.py -u library_card_num -p library_card_pin -o organization https://www.lynda.com/COURSE_NAME/ID.html  -d "/path/to/directory/"
+    python lynda-dl.py -u library_card_num -p library_card_pin -o organization COURSE_URL  -d "/path/to/directory/"
 
+***list down course information***
+
+    python lynda-dl.py COURSE_URL --info
+  
+***Download with specific resolution/ quality***
+
+    python lynda-dl.py COURSE_URL -q 720
 
 ## **Advanced Usage**
 
