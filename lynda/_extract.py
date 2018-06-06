@@ -176,6 +176,15 @@ class Lynda(ProgressBar):
                     'subtitle_data' : None,
                     }
 
+    def _get_max_stream(self, streams):
+        cl = 'content-length'
+        try:
+            fsize = self._session.get(streams.get('url'), stream=True).headers[cl]
+        except conn_error as e:
+            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
+            sys.exit(0)
+        return {'url' : streams.get('url'), 'size' : int(fsize)}
+
     def _extract_sources(self, course_id, lecture_id):
         _temp = []
         url = VIDEO_URL.format(course_id=course_id, video_id=lecture_id)
@@ -185,6 +194,11 @@ class Lynda(ProgressBar):
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
         if play and isinstance(play, list):
+            _stream_720 = [{'url' : s['urls'].get('720')} for s in play]
+            _max_stream = max(map(self._get_max_stream, _stream_720))
+            cdn = 'akamai' if 'akamaihd.net' in _max_stream.get('url') else 'edgecast'
+            _data_720 = {'type' : cdn, 'height' : 720, 'width' : 1280, 'extension' : 'mp4', 'download_url' : _max_stream.get('url')}
+            _temp.append(_data_720)
             for entry in play:
                 urls = entry.get('urls')
                 if not isinstance(urls, dict):
@@ -196,7 +210,7 @@ class Lynda(ProgressBar):
                     if height == '540' or height == 540:
                         width = '960'
                     if height == '720' or height == 720:
-                        width = '1280'
+                        continue
                     if height == '360' or height == 360:
                         width = '640'
                     _temp.append({

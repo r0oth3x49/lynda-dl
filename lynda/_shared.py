@@ -21,7 +21,6 @@ ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 '''
-import signal
 from ._compat import (
                 re,
                 os,
@@ -37,13 +36,7 @@ from ._compat import (
                 compat_httperr,
                 HEADERS,
     )
-from ._colorized import *
 early_py_version = sys.version_info[:2] < (2, 7)
-
-def Interrupt(signal, frame):
-    sys.stdout.write ('\n' + fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sd + "User Interrupted..\n")
-    sys.exit(0)
-signal.signal(signal.SIGINT, Interrupt)
 
 class LyndaCourse(object):
     
@@ -209,8 +202,6 @@ class LyndaLectures(object):
             return st
         
         self._best = max(streams, key=_sortkey)
-        if self._best.get_filesize() == 0:
-            self._best = max(streams[::-1], key=_sortkey)
         return self._best
 
     def getbest(self):

@@ -16,7 +16,6 @@ from lynda._progress import ProgressBar
 from lynda._colorized.banner import banner
 getpass = GetPass()
 
-
 class Lynda(ProgressBar):
 
 	def __init__(self, url, username='', password='', organization=''):

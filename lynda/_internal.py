@@ -108,7 +108,7 @@ class InternLyndaLecture(LyndaLectures):
         self._streams = streams
 
     def _process_subtitles(self):
-        subtitles = InternLyndaLectureSubtitles(self._info['subtitles'], self) if self._info['subtitles'].get('subtitle_data') > 0 else {}
+        subtitles = InternLyndaLectureSubtitles(self._info['subtitles'], self) if self._info['subtitles'].get('subtitle_data') else {}
         self._subtitles = subtitles
 
 
