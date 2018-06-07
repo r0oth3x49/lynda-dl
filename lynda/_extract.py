@@ -80,6 +80,7 @@ class Lynda(ProgressBar):
         ok = re.compile(r'[^\\/:*?"<>|]')
         text = "".join(x if ok.match(x) else "_" for x in text)
         text = re.sub(r'^\d*\s*\.*\s*', '', text)
+        text = text.strip()
         return re.sub('\.+$', '', text) if text.endswith(".") else text
 
     def _sanitize(self, unsafetext):
@@ -261,7 +262,7 @@ class Lynda(ProgressBar):
             for entry in course:
                 chapter_id = entry.get('ID')
                 chapter_index = entry.get('ChapterIndex')
-                chapter_title = self._sanitize(self._clean(entry.get('Title')))
+                chapter_title = self._sanitize(self._clean(entry.get('Title'))) or self._sanitize(self._clean(entry.get('Videos', [])[0].get('Title')))
                 chapter = "{0:02d} {1!s}".format(chapter_index, chapter_title)
                 lectures = entry.get('Videos', [])
                 if lectures and len(lectures) > 0:
