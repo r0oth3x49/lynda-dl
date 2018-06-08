@@ -318,7 +318,7 @@ class LyndaLectureStream(object):
         if not self._fsize:
             try:
                 cl = 'content-length'
-                self._fsize = requests.get(self.url, stream=True, headers={'User-Agent': HEADERS.get('User-Agent')}).headers[cl]
+                self._fsize = int(requests.get(self.url, stream=True, headers={'User-Agent': HEADERS.get('User-Agent')}).headers[cl])
             except conn_error as e:
                 self._fsize = 0
         return self._fsize

@@ -128,7 +128,7 @@ class Lynda(ProgressBar):
         except conn_error as e:
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
-        return {'type' : 'file', 'file_size' : response.headers.get('Content-Length'), 'download_url' : response.url, 'extension' : response.headers.get('Content-Type').split('/')[-1]}
+        return {'type' : 'file', 'file_size' : int(response.headers.get('Content-Length')), 'download_url' : response.url, 'extension' : response.headers.get('Content-Type').split('/')[-1]}
 
 
     def _extract_assets(self, course_id):
