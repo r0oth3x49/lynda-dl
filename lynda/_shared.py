@@ -51,10 +51,11 @@ class LyndaCourse(object):
 
         self._id = None
         self._title = None
-        self._chapters_count = None
-        self._total_lectures = None
+        self._chapters_count = 0
+        self._total_lectures = 0
         self._description = None
         self._short_description = None
+        self._assets_count = 0
 
         self._chapters = []
         self._assets = {}
@@ -78,7 +79,7 @@ class LyndaCourse(object):
         return self._title
 
     @property
-    def asset(self):
+    def assets(self):
         if not self._assets:
             self._process_assets()
         return self._assets
@@ -177,7 +178,7 @@ class LyndaLectures(object):
         self._lecture_id = None
         self._lecture_title  = None
         self._lecture_index = None
-        self._sources_count = None
+        self._sources_count = 0
 
         self._streams = []
         self._subtitles = []

@@ -57,6 +57,7 @@ class InternLyndaCourse(LyndaCourse, Lynda):
             self._total_lectures    =       self._info['total_lectures']
             self._description       =       self._info['description']
             self._short_description =       self._info['short_description']
+            self._assets_count      =       self._info['assets_count']
             self._chapters          =       [InternLyndaChapter(z) for z in self._info['chapters']]
             sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to logout now...\n")
             self._logout()
@@ -67,7 +68,7 @@ class InternLyndaCourse(LyndaCourse, Lynda):
             sys.exit(0)
 
     def _process_assets(self):
-        assets  =   InternLyndaLectureAssets(self._info['asset'], self) if self._info['asset'].get('file_size') else {}
+        assets  =   [InternLyndaLectureAssets(z, self) for z in self._info['assets']] if self._assets_count > 0 else []#InternLyndaLectureAssets(self._info['asset'], self) if self._info['asset'].get('file_size') else {}
         self._assets = assets
 
 class InternLyndaChapter(LyndaChapters):

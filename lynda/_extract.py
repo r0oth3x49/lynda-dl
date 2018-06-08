@@ -54,8 +54,9 @@ class Lynda(ProgressBar):
 
     _TIMECODE_REGEX = r'\[(?P<timecode>\d+:\d+:\d+[\.,]\d+)\]'
     _VALID_URL = r'''https?://(?:www|m)\.(?:lynda\.com|educourse\.ga)/(?P<course_path>(?:[^/]+/){2,3}(?P<course_id>\d+))-2\.html'''
-    _VALID_COURSE_URL = r'''(?x)(?:(.+)/(?P<path>[a-zA-Z0-9_-]+)|(?P<course_path>[a-zA-Z0-9_-]+))/(?P<course_name>[a-zA-Z0-9_-]+)/(?P<course_id>\d+)'''#r'''https?://(?:www|m)\.(?:lynda\.com|educourse\.ga)/(?P<path>[a-zA-Z0-9_-]+)/(?P<course_name>[a-zA-Z0-9_-]+)/(?P<course_id>\d+)-2\.html'''
+    _VALID_COURSE_URL = r'''(?x)(?:(.+)/(?P<path>[a-zA-Z0-9_-]+)|(?P<course_path>[a-zA-Z0-9_-]+))/(?P<course_name>[a-zA-Z0-9_-]+)/(?P<course_id>\d+)'''
     _VIDEO_URL = r'''(?x)https?://(?:www\.)?(?:lynda\.com|educourse\.ga)/(?:(?:[^/]+/){2,3}(?P<course_id>\d+)|player/embed)/(?P<video_id>\d+)'''
+    _EXERCISE_FILES_REGEX = r'''(?i)<a[^>]+?/ajax/(?P<download_url>(?:[^/]+/){2,6}(?P<file_id>\d+))[^>]*>(?is)<span[^>]+?class=(["\'])exercise-name\1*[^>]*>(?P<filename>.+?)</span>'''#(?i)<span[^>]+?class=(["\'])file-size\1*[^>]*>\((?P<size>.+?)\)</span>'''
 
     def __init__(self):
         self._session = ''
@@ -121,10 +122,18 @@ class Lynda(ProgressBar):
         if srt:
             return srt
 
+    def _extract_asset_download_url(self, url):
+        try:
+            response = self._session.get(url, stream=True)
+        except conn_error as e:
+            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
+            sys.exit(0)
+        return {'type' : 'file', 'file_size' : response.headers.get('Content-Length'), 'download_url' : response.url, 'extension' : response.headers.get('Content-Type').split('/')[-1]}
+
+
     def _extract_assets(self, course_id):
         url =  EXERCISE_FILES_URL.format(course_id=course_id)
-        _temp = {}
-        _temp['type'] = 'file'
+        _temp = []
         try:
             response = self._session.get(url).json()
         except conn_error as e:
@@ -132,28 +141,11 @@ class Lynda(ProgressBar):
             sys.exit(0)
         if response and isinstance(response, dict):
             exercise_tab = (response.get('exercisetab')).replace('\r', '').replace('\n', '').replace('\t', '')
-            mobjf = re.search(r'(?is)<span[^>]+?class=(["\'])exercise-name\1*[^>]*>(?P<filename>.+?)</span>', exercise_tab)
-            mobjurl = re.search(r'(?is)<a[^>]+?href=(["\'])(?P<href>.+)"\s*role', exercise_tab)
+            _temp = [m.groupdict() for m in re.finditer(self._EXERCISE_FILES_REGEX, exercise_tab)]
+            for entry in _temp:
+                entry.update(self._extract_asset_download_url(url='https://www.lynda.com/ajax/{href}'.format(href=entry.get('download_url'))))
 
-            if mobjf:
-                filename = mobjf.group('filename')
-                extension = filename.split('.', 1)[-1]
-                _temp['filename'] = filename
-                _temp['extension'] = extension
-
-            if mobjurl:
-                _url = 'https://www.lynda.com{href}'.format(href=mobjurl.group('href'))
-                try:
-                    response = self._session.get(_url, stream=True)
-                except conn_error as e:
-                    sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
-                    sys.exit(0)
-                if response.url != _url:
-                    download_url = response.url
-                    file_size = response.headers.get('Content-Length')
-                    _temp['download_url'] = download_url
-                    _temp['file_size'] = file_size
-            return _temp
+        return _temp
 
     def _extract_subtitles(self, video_id):
         url =  CAPTIONS_URL.format(video_id=video_id)
@@ -250,8 +242,8 @@ class Lynda(ProgressBar):
         _lynda['course_title'] = self._sanitize(self._clean(course_json.get('Title'))) or course_name
         _lynda['description'] = course_json.get('Description')
         _lynda['short_description'] = course_json.get('ShortDescription')
-        assets = self._extract_assets(course_id)
-        _lynda['asset'] = assets
+        _lynda['assets'] = self._extract_assets(course_id)
+        _lynda['assets_count'] = len(_lynda['assets'])
         _lynda['chapters'] = []
 
 

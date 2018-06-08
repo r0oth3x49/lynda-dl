@@ -36,7 +36,7 @@ class Lynda(ProgressBar):
 		chapters = course.get_chapters()
 		total_lectures = course.lectures
 		total_chapters = course.chapters
-		asset = course.asset
+		assets = course.assets
 		sys.stdout.write (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Course " + fb + sb + "'%s'.\n" % (course_name))
 		sys.stdout.write (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Chapter(s) (%s).\n" % (total_chapters))
 		sys.stdout.write (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture(s) (%s).\n" % (total_lectures))
@@ -72,17 +72,19 @@ class Lynda(ProgressBar):
 							if lecture_best.dimention[1] == stream.dimention[1]:
 								in_MB = in_MB + fc + sb + "(Best)" + fg + sd
 							sys.stdout.write('\t- ' + fg + sd + "{:<23} {:<8}{}{}{}{}\n".format(str(stream), str(stream.dimention[1]) + 'p', sz, in_MB, fy, sb))
-		content_length = asset.get_filesize()
-		if content_length != 0:
-			if content_length <= 1048576.00:
-				size = round(float(content_length) / 1024.00, 2)
-				sz = format(size if size < 1024.00 else size/1024.00, '.2f')
-				in_MB = 'KB' if size < 1024.00 else 'MB'
-			else:
-				size = round(float(content_length) / 1048576, 2)
-				sz = format(size if size < 1024.00 else size/1024.00, '.2f')
-				in_MB = "MB " if size < 1024.00 else 'GB '
-			sys.stdout.write('\t- ' + fg + sd + "{:<23} {:<8}{}{}{}{}\n\n".format(str(asset), asset.extension, sz, in_MB, fy, sb))
+		if assets and len(assets) > 0:
+			for asset in assets:
+				content_length = asset.get_filesize()
+				if content_length != 0:
+					if content_length <= 1048576.00:
+						size = round(float(content_length) / 1024.00, 2)
+						sz = format(size if size < 1024.00 else size/1024.00, '.2f')
+						in_MB = 'KB' if size < 1024.00 else 'MB'
+					else:
+						size = round(float(content_length) / 1048576, 2)
+						sz = format(size if size < 1024.00 else size/1024.00, '.2f')
+						in_MB = "MB " if size < 1024.00 else 'GB '
+					sys.stdout.write('\t- ' + fg + sd + "{:<23} {:<8}{}{}{}{}\n".format(str(asset), asset.extension, sz, in_MB, fy, sb))
 
 	def download_assets(self, assets='', filepath=''):
 		if assets:
@@ -156,6 +158,7 @@ class Lynda(ProgressBar):
 		chapters = course.get_chapters()
 		total_lectures = course.lectures
 		total_chapters = course.chapters
+		assets = course.assets
 		sys.stdout.write (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Course " + fb + sb + "'%s'.\n" % (course_name))
 		sys.stdout.write (fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sd + "Chapter(s) (%s).\n" % (total_chapters))
 		sys.stdout.write (fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Lecture(s) (%s).\n" % (total_lectures))
@@ -193,7 +196,9 @@ class Lynda(ProgressBar):
 				else:
 					lecture_best = lecture.get_quality(best_quality=lecture_best, streams=lecture_streams, requested=quality)
 					self.download_lectures_and_captions(lecture_best=lecture_best, lecture_title=lecture_title, inner_index=lecture_index, lectures_count=lectures_count, subtitle=lecture_subtitles, filepath=filepath)
-		self.download_assets(assets=course.asset, filepath=course_path)
+		if assets and len(assets) > 0:
+			for asset in assets:
+				self.download_assets(assets=asset, filepath=course_path)
 
 def main():
 	sys.stdout.write(banner())
