@@ -31,7 +31,7 @@ from ._compat import (
             )
 from ._colorized import *
 
-_spin = itertools.cycle(['-', '|', '/', '\\'])
+_spin = itertools.cycle(['-', '\\', '|', '/'])
 
 class ProgressBar(object):
 

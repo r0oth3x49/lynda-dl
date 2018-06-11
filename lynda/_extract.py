@@ -190,10 +190,12 @@ class Lynda(ProgressBar):
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
         if play and isinstance(play, list):
-            _max_stream = self._max(list(map(self._get_max_stream, [{'url' : s['urls'].get('720')} for s in play])))
-            cdn = 'akamai' if 'akamaihd.net' in _max_stream.get('url') else 'edgecast'
-            _data_720 = {'type' : cdn, 'height' : 720, 'width' : 1280, 'extension' : 'mp4', 'download_url' : _max_stream.get('url')}
-            _temp.append(_data_720)
+            _best_resolution = [{'url' : s['urls'].get('720')} for s in play if s['urls'].get('720')]
+            _max_stream = self._max(list(map(self._get_max_stream, _best_resolution))) if _best_resolution and isinstance(_best_resolution, list) else {}
+            if _max_stream and isinstance(_max_stream, dict):
+                cdn = 'akamai' if 'akamaihd.net' in _max_stream.get('url') else 'edgecast'
+                _data_720 = {'type' : cdn, 'height' : 720, 'width' : 1280, 'extension' : 'mp4', 'download_url' : _max_stream.get('url')}
+                _temp.append(_data_720)
             for entry in play:
                 urls = entry.get('urls')
                 if not isinstance(urls, dict):
