@@ -67,7 +67,7 @@ class LyndaAuth(object):
 
     def _user_session(self):
         try:
-            webpage = self._session.get(USER_LOGIN_URL, headers=HEADERS).text
+            webpage = self._session.get(USER_LOGIN_URL, headers={'User-Agent' : HEADERS.get('User-Agent')}).text
         except conn_error as e:
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
@@ -78,7 +78,7 @@ class LyndaAuth(object):
                 sigin_webpage, signin_url = self._user_login_steps(form_html, AJAX_PASSWORD, {'email': self.username}, USER_LOGIN_URL)
                 password_form = sigin_webpage.get('body')
                 if not password_form:
-                    sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "[-] : Lynda Says : Sorry, we do not recognize that email or username.\n")
+                    sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Lynda Says : Sorry, we do not recognize that email or username.\n")
                     sys.exit(0)
                 response, url = self._user_login_steps(password_form, AJAX_USERNAME, {'email': self.username, 'password': self.password}, signin_url)
                 response_text = response.get('UserID') if response.get('UserID') else response.get('password')
