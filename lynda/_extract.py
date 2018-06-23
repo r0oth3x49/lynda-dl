@@ -80,12 +80,11 @@ class Lynda(ProgressBar):
     def _clean(self, text):
         ok = re.compile(r'[^\\/:*?"<>|]')
         text = "".join(x if ok.match(x) else "_" for x in text)
-        text = re.sub(r'^\d*\s*\.*\s*', '', text)
-        text = text.strip()
-        return re.sub('\.+$', '', text) if text.endswith(".") else text
+        text = (text.lstrip('0123456789.- ')).rstrip('. ')
+        return text
 
     def _sanitize(self, unsafetext):
-        text = sanitize(slugify(unsafetext, lower=False, spaces=True, ok=SLUG_OK + '()._-'))
+        text = slugify(unsafetext, lower=False, spaces=True, ok=SLUG_OK + '()._-')
         return text
 
     def _login(self, username='', password='', organization=''):
@@ -242,8 +241,8 @@ class Lynda(ProgressBar):
 
         _lynda['course_id'] = course_json.get('ID') or course_id
         _lynda['course_title'] = self._sanitize(self._clean(course_json.get('Title'))) or course_name
-        _lynda['description'] = course_json.get('Description')
-        _lynda['short_description'] = course_json.get('ShortDescription')
+        _lynda['description'] = self._sanitize(course_json.get('Description'))
+        _lynda['short_description'] = self._sanitize(course_json.get('ShortDescription'))
         _lynda['assets'] = self._extract_assets(course_id)
         _lynda['assets_count'] = len(_lynda['assets'])
         _lynda['chapters'] = []
