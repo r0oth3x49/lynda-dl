@@ -110,6 +110,26 @@ class LyndaCourse(object):
             self._fetch_course()
         return self._chapters
 
+    def _write_to_file(self, data, filename):
+        if pyver == 3:
+            with open(filename, 'wb', encoding='utf-8') as f:
+                try:
+                    f.write(data)
+                except Exception as e:
+                    retVal = {'status' : 'False', 'msg' : 'Python3 Exception : {}'.format(e)}
+                else:
+                    retVal = {'status' : 'True', 'msg' : 'download'}
+            f.close()
+        else:
+            with open(filename, 'wb') as f:
+                try:
+                    f.write(data)
+                except Exception as e:
+                    retVal = {'status' : 'False', 'msg' : 'Python2 Exception : {}'.format(e)}
+                else:
+                    retVal = {'status' : 'True', 'msg' : 'download'}
+            f.close()
+
     def course_description(self, filepath):
         self.create_chapter(filepath=filepath)
         description_path = "%s\\%s-description.txt" % (filepath, self.title) if os.name == 'nt' else "%s/%s-description.txt" % (filepath, self.title)
@@ -121,10 +141,8 @@ class LyndaCourse(object):
 ------------------------------
   - Short Description
 ------------------------------
- %s''' % (self.description, self.short_description)
-        with open(description_path, 'w') as f:
-            f.write(data)
-        f.close()
+ %s''' % (self.description.encode('utf-8'), self.short_description.encode('utf-8'))
+        return self._write_to_file(data, description_path)
 
     def create_chapter(self, filepath=''):
         try:
