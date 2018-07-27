@@ -111,24 +111,14 @@ class LyndaCourse(object):
         return self._chapters
 
     def _write_to_file(self, data, filename):
-        if pyver == 3:
-            with open(filename, 'wb', encoding='utf-8') as f:
-                try:
-                    f.write(data)
-                except Exception as e:
-                    retVal = {'status' : 'False', 'msg' : 'Python3 Exception : {}'.format(e)}
-                else:
-                    retVal = {'status' : 'True', 'msg' : 'download'}
-            f.close()
-        else:
-            with open(filename, 'wb') as f:
-                try:
-                    f.write(data)
-                except Exception as e:
-                    retVal = {'status' : 'False', 'msg' : 'Python2 Exception : {}'.format(e)}
-                else:
-                    retVal = {'status' : 'True', 'msg' : 'download'}
-            f.close()
+        with open(filename, 'wb') as f:
+            try:
+                f.write(data)
+            except Exception as e:
+                retVal = {'status' : 'False', 'msg' : 'Python3 Exception : {}'.format(e)}
+            else:
+                retVal = {'status' : 'True', 'msg' : 'download'}
+        f.close()
 
     def course_description(self, filepath):
         self.create_chapter(filepath=filepath)
