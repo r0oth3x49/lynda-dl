@@ -27,11 +27,14 @@ class Lynda(ProgressBar):
 		super(Lynda, self).__init__()
 
 	def course_list_down(self):
-		if not self.organization:
-			sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as " + fm + sb +"(%s)" % (self.username) +  fg + sb +"...\n")
-		if self.organization:
-			sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as organization " + fm + sb +"(%s)" % (self.organization) +  fg + sb +"...\n")
-		course = lynda.course(url=self.url, username=self.username, password=self.password, organization=self.organization)
+		if self.cookies:
+			sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login using cookies ...\n")
+		if not self.cookies:
+			if not self.organization:
+				sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as " + fm + sb +"(%s)" % (self.username) +  fg + sb +"...\n")
+			if self.organization:
+				sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as organization " + fm + sb +"(%s)" % (self.organization) +  fg + sb +"...\n")
+		course = lynda.course(url=self.url, username=self.username, password=self.password, organization=self.organization, cookies=self.cookies)
 		course_id = course.id
 		course_name = course.title
 		chapters = course.get_chapters()

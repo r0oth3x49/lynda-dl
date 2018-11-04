@@ -1,4 +1,4 @@
-[![GitHub release](https://img.shields.io/badge/release-v0.2-brightgreen.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/releases/tag/v0.2)
+[![GitHub release](https://img.shields.io/badge/release-v0.3-brightgreen.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/releases/tag/v0.3)
 [![GitHub stars](https://img.shields.io/github/stars/r0oth3x49/lynda-dl.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/r0oth3x49/lynda-dl.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/network)
 [![GitHub issues](https://img.shields.io/github/issues/r0oth3x49/lynda-dl.svg?style=flat-square)](https://github.com/r0oth3x49/lynda-dl/issues)
@@ -7,12 +7,13 @@
 # lynda-dl
 **A cross-platform python based utility to download courses from lynda for personal offline use.**
 
-[![lynda.png](https://s26.postimg.cc/bsm316qax/lynda.png)](https://postimg.cc/image/8lrjhk5ut/)
+[![lynda-dl.png](https://i.postimg.cc/NFqdCyxH/lynda-dl.png)](https://postimg.cc/341jdxV8)
 
 ## ***Features***
 
 - Resume capability for a course video.
 - Supports organization and individual lynda users both.
+- Added support for cookie based login. (option: `-k / --cookies`).
 - List down course contents and video resolution, suggest the best resolution (option: `--info`).
 - Download/skip all available subtitles for a video (options: `--skip-sub, --skip-sub`).
 - Download lecture(s) requested resolution (option: `-q / --quality`).
