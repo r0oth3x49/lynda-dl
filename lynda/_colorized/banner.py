@@ -23,6 +23,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from .colors import *
+from .. import __version__
 
 def banner():
     banner = """%s%s
@@ -35,8 +36,8 @@ def banner():
   888     `888'     888   888  888   888  d8(  888      888   888   888    
  o888o     .8'     o888o o888o `Y8bod88P" `Y888""8o     `Y8bod88P" o888o   
        .o..P'                                                                  
-       `Y8P'\t\t\t\t%s%sVersion : %s%s0.2\n\t\t\t\t\t%s%sAuthor  : %s%sNasir Khan (r0ot h3x49)\n\t\t\t\t\t%s%sGithub  : %s%shttps://github.com/r0oth3x49
+       `Y8P'\t\t\t\t%s%sVersion : %s%s%s\n\t\t\t\t\t%s%sAuthor  : %s%sNasir Khan (r0ot h3x49)\n\t\t\t\t\t%s%sGithub  : %s%shttps://github.com/r0oth3x49
 
 
-""" % (fc, sb, fm, sb, fc, sb, fm, sb, fc, sb, fy,sb, fg, sd, fy,sb, fg, sd, fy,sb, fg, sd)
+""" % (fc, sb, fm, sb, fc, sb, fm, sb, fc, sb, fy,sb, fg, sd, __version__, fy,sb, fg, sd, fy,sb, fg, sd)
     return banner

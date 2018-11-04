@@ -45,7 +45,10 @@ class InternLyndaCourse(LyndaCourse, Lynda):
     def _fetch_course(self):
         if self._have_basic:
             return
-        auth = self._login(username=self._username, password=self._password, organization=self._organization)
+        if not self._cookies:
+            auth = self._login(username=self._username, password=self._password, organization=self._organization)
+        if self._cookies:
+            auth = self._login(cookies=self._cookies)
         if auth.get('login') == 'successful':
             sys.stdout.write(fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sb + "Logged in successfully.\n")
             sys.stdout.write('\r' + fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Downloading course information .. \r")

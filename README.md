@@ -49,6 +49,15 @@ experience the problem? All these details will help to fix any potential bugs as
 >
 > Any other information you want to share that is relevant to the issue being reported.
 
+## ***Extracting Cookies***
+
+ - Login to your lynda account via browser.
+ - Once you are logged in right click on page the search for option called **Inspect Element** and click on that.
+ - Under that look for **Network Tab** and click on that. Under that **Network Tab** click on Requests type **XHR** .
+ - Now Visit the **Course URL** you want to download, You will see some requests under **Network Tab XHR**.
+ - Right click on any of the Requests which links to **lynda.com**. Simply copy **Request Headers** and save to text file.
+ - Done run the lynda-dl against that text file it will start downloading the course.
+
 ## ***Requirements***
 
 - Python (2 or 3)
@@ -126,8 +135,8 @@ You can download the latest version of lynda-dl by cloning the GitHub repository
 <pre><code>
 Author: Nasir khan (<a href="http://r0oth3x49.herokuapp.com/">r0ot h3x49</a>)
 
-usage: lynda-dl.py [-h] [-v] [-u] [-p] [-o] [-d] [-q] [--info] [--sub-only]
-                   [--skip-sub]
+usage: lynda-dl.py [-h] [-v] [-k] [-u] [-p] [-o] [-d] [-q] [--info]
+                   [--sub-only] [--skip-sub]
                    course
 
 A cross-platform python based utility to download courses from lynda for
@@ -141,6 +150,7 @@ General:
   -v, --version         Shows the version.
 
 Authentication:
+  -k , --cookies        Cookies to authenticate with.
   -u , --username       Username or Library Card Number.
   -p , --password       Password or Library Card Pin.
   -o , --organization   Organization, registered at Lynda.
@@ -157,5 +167,6 @@ Others:
 Example:
   python lynda-dl.py  COURSE_URL
   python lynda-dl.py -o organization COURSE_URL
+  python lynda-dl.py -k cookies.txt COURSE_URL
 
 </code></pre>

@@ -40,12 +40,13 @@ early_py_version = sys.version_info[:2] < (2, 7)
 
 class LyndaCourse(object):
     
-    def __init__(self, url, username='', password='', organization='', basic=True, callback=None):
+    def __init__(self, url, username='', password='', organization='', cookies='', basic=True, callback=None):
 
         self._url = url
         self._username = username
         self._password = password
-        self._organization = organization 
+        self._cookies  = cookies 
+        self._organization = organization
         self._callback = callback or (lambda x: None)
         self._have_basic = False
 

@@ -84,12 +84,16 @@ class Lynda(ProgressBar):
         return text
 
     def _sanitize(self, unsafetext):
-        text = slugify(unsafetext, lower=False, spaces=True, ok=SLUG_OK + '()._-')
+        text = sanitize(slugify(unsafetext, lower=False, spaces=True, ok=SLUG_OK + '().[]'))
         return text
 
-    def _login(self, username='', password='', organization=''):
-        auth = LyndaAuth(username=username, password=password, organization=organization)
-        self._session = auth.authenticate()
+    def _login(self, username='', password='', organization='', cookies=''):
+        if not cookies:
+            auth = LyndaAuth(username=username, password=password, organization=organization)
+            self._session = auth.authenticate()
+        if cookies:
+            auth = LyndaAuth()
+            self._session = auth.authenticate(cookies=cookies)
         if self._session is not None:
             return {'login' : 'successful'}
         else:
@@ -129,14 +133,18 @@ class Lynda(ProgressBar):
             sys.exit(0)
         return {'type' : 'file', 'file_size' : int(response.headers.get('Content-Length')), 'download_url' : response.url, 'extension' : response.headers.get('Content-Type').split('/')[-1]}
 
-
     def _extract_assets(self, course_id):
         url =  EXERCISE_FILES_URL.format(course_id=course_id)
         _temp = []
         try:
             response = self._session.get(url).json()
         except conn_error as e:
+            print("")
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
+            sys.exit(0)
+        except ValueError as e:
+            print("")
+            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "JSONDecodeError : it seems your cookies got expired, provide again.\n")
             sys.exit(0)
         if response and isinstance(response, dict):
             exercise_tab = (response.get('exercisetab')).replace('\r', '').replace('\n', '').replace('\t', '')
@@ -151,7 +159,12 @@ class Lynda(ProgressBar):
         try:
             subs = self._session.get(url).json()
         except conn_error as e:
+            print("")
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
+            sys.exit(0)
+        except ValueError as e:
+            print("")
+            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "JSONDecodeError : it seems your cookies got expired, provide again.\n")
             sys.exit(0)
         if subs:
             return {
@@ -186,7 +199,12 @@ class Lynda(ProgressBar):
         try:
             play = self._session.get(url).json()
         except conn_error as e:
+            print("")
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
+            sys.exit(0)
+        except ValueError as e:
+            print("")
+            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "JSONDecodeError : it seems your cookies got expired, provide again.\n")
             sys.exit(0)
         if play and isinstance(play, list):
             _best_resolution = [{'url' : s['urls'].get('720')} for s in play if s['urls'].get('720')]
@@ -289,3 +307,4 @@ class Lynda(ProgressBar):
                         })
 
         return _lynda
+

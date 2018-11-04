@@ -18,10 +18,11 @@ getpass = GetPass()
 
 class Lynda(ProgressBar):
 
-	def __init__(self, url, username='', password='', organization=''):
+	def __init__(self, url, username='', password='', organization='', cookies=''):
 		self.url = url
 		self.username = username
 		self.password = password
+		self.cookies  = cookies
 		self.organization = organization
 		super(Lynda, self).__init__()
 
@@ -148,11 +149,14 @@ class Lynda(ProgressBar):
 			self.download_subtitles(subtitle=subtitle, filepath=filepath)
 
 	def course_download(self, path='', quality='', caption_only=False, skip_captions=False):
-		if not self.organization:
-			sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as " + fm + sb +"(%s)" % (self.username) +  fg + sb +"...\n")
-		if self.organization:
-			sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as organization " + fm + sb +"(%s)" % (self.organization) +  fg + sb +"...\n")
-		course = lynda.course(url=self.url, username=self.username, password=self.password, organization=self.organization)
+		if self.cookies:
+			sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login using cookies ...\n")
+		if not self.cookies:
+			if not self.organization:
+				sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as " + fm + sb +"(%s)" % (self.username) +  fg + sb +"...\n")
+			if self.organization:
+				sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to login as organization " + fm + sb +"(%s)" % (self.organization) +  fg + sb +"...\n")
+		course = lynda.course(url=self.url, username=self.username, password=self.password, organization=self.organization, cookies=self.cookies)
 		course_id = course.id
 		course_name = course.title
 		chapters = course.get_chapters()
@@ -219,6 +223,11 @@ def main():
 
 	authentication = parser.add_argument_group("Authentication")
 	authentication.add_argument(
+        '-k', '--cookies',\
+        dest='cookies',\
+        type=str,\
+        help="Cookies to authenticate with.",metavar='')
+	authentication.add_argument(
 		'-u', '--username',\
 		dest='username',\
 		type=str,\
@@ -272,13 +281,84 @@ def main():
 		sys.stdout.write (fc + sd + "[" + fw + sb + "+" + fc + sd + "] : " + fw + sd + "Found (%s) courses ..\n" % (len(courses)))
 		for course in courses:
 
+			if options.cookies:
+				f_in = open(options.cookies)
+				cookies = '\n'.join([line for line in (l.strip() for l in f_in) if line])
+				f_in.close()
+				lynda = Lynda(url=course, cookies=cookies)
+				if options.info:
+					lynda.course_list_down()
+
+				if not options.info:
+					if options.caption_only and not options.skip_captions:
+						lynda.course_download(caption_only=options.caption_only, path=options.output)
+					elif not options.caption_only and options.skip_captions:
+						lynda.course_download(skip_captions=options.skip_captions, path=options.output, quality=options.quality)
+					else:
+						lynda.course_download(path=options.output, quality=options.quality)
+
+			if not options.cookies:
+				if not options.username and not options.password:
+					username = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Username : " + fg + sb
+					password = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Password : " + fc + sb
+					email = getpass.getuser(prompt=username)
+					passwd = getpass.getpass(prompt=password)
+					if email and passwd:
+						lynda = Lynda(url=course, username=email, password=passwd, organization=options.org)
+					else:
+						sys.stdout.write('\n' + fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required.\n")
+						sys.exit(0)
+
+					if options.info:
+						lynda.course_list_down()
+
+					if not options.info:
+						if options.caption_only and not options.skip_captions:
+							lynda.course_download(caption_only=options.caption_only, path=options.output)
+						elif not options.caption_only and options.skip_captions:
+							lynda.course_download(skip_captions=options.skip_captions, path=options.output, quality=options.quality)
+						else:
+							lynda.course_download(path=options.output, quality=options.quality)
+
+				elif options.username and options.password:
+					lynda = Lynda(url=course, username=options.username, password=options.password, organization=options.org)
+					if options.info:
+						lynda.course_list_down()
+
+					if not options.info:
+						if options.caption_only and not options.skip_captions:
+							lynda.course_download(caption_only=options.caption_only, path=options.output)
+						elif not options.caption_only and options.skip_captions:
+							lynda.course_download(skip_captions=options.skip_captions, path=options.output, quality=options.quality)
+						else:
+							lynda.course_download(path=options.output, quality=options.quality)
+
+	if not os.path.isfile(options.course):
+
+		if options.cookies:
+			f_in = open(options.cookies)
+			cookies = '\n'.join([line for line in (l.strip() for l in f_in) if line])
+			f_in.close()
+			lynda = Lynda(url=options.course, cookies=cookies)
+			if options.info:
+				lynda.course_list_down()
+
+			if not options.info:
+				if options.caption_only and not options.skip_captions:
+					lynda.course_download(caption_only=options.caption_only, path=options.output)
+				elif not options.caption_only and options.skip_captions:
+					lynda.course_download(skip_captions=options.skip_captions, path=options.output, quality=options.quality)
+				else:
+					lynda.course_download(path=options.output, quality=options.quality)
+
+		if not options.cookies:
 			if not options.username and not options.password:
 				username = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Username : " + fg + sb
 				password = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Password : " + fc + sb
 				email = getpass.getuser(prompt=username)
 				passwd = getpass.getpass(prompt=password)
 				if email and passwd:
-					lynda = Lynda(url=course, username=email, password=passwd, organization=options.org)
+					lynda = Lynda(url=options.course, username=email, password=passwd, organization=options.org)
 				else:
 					sys.stdout.write('\n' + fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required.\n")
 					sys.exit(0)
@@ -295,7 +375,7 @@ def main():
 						lynda.course_download(path=options.output, quality=options.quality)
 
 			elif options.username and options.password:
-				lynda = Lynda(url=course, username=options.username, password=options.password, organization=options.org)
+				lynda = Lynda(url=options.course, username=options.username, password=options.password, organization=options.org)
 				if options.info:
 					lynda.course_list_down()
 
@@ -306,43 +386,6 @@ def main():
 						lynda.course_download(skip_captions=options.skip_captions, path=options.output, quality=options.quality)
 					else:
 						lynda.course_download(path=options.output, quality=options.quality)
-
-	if not os.path.isfile(options.course):
-
-		if not options.username and not options.password:
-			username = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Username : " + fg + sb
-			password = fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sd + "Password : " + fc + sb
-			email = getpass.getuser(prompt=username)
-			passwd = getpass.getpass(prompt=password)
-			if email and passwd:
-				lynda = Lynda(url=options.course, username=email, password=passwd, organization=options.org)
-			else:
-				sys.stdout.write('\n' + fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Username and password is required.\n")
-				sys.exit(0)
-
-			if options.info:
-				lynda.course_list_down()
-
-			if not options.info:
-				if options.caption_only and not options.skip_captions:
-					lynda.course_download(caption_only=options.caption_only, path=options.output)
-				elif not options.caption_only and options.skip_captions:
-					lynda.course_download(skip_captions=options.skip_captions, path=options.output, quality=options.quality)
-				else:
-					lynda.course_download(path=options.output, quality=options.quality)
-
-		elif options.username and options.password:
-			lynda = Lynda(url=options.course, username=options.username, password=options.password, organization=options.org)
-			if options.info:
-				lynda.course_list_down()
-
-			if not options.info:
-				if options.caption_only and not options.skip_captions:
-					lynda.course_download(caption_only=options.caption_only, path=options.output)
-				elif not options.caption_only and options.skip_captions:
-					lynda.course_download(skip_captions=options.skip_captions, path=options.output, quality=options.quality)
-				else:
-					lynda.course_download(path=options.output, quality=options.quality)
 
 if __name__ == '__main__':
 	try:

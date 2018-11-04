@@ -32,6 +32,7 @@ from ._compat import (
         conn_error,
         HEADERS,
         LOGOUT_URL,
+        ParseCookie,
         USER_LOGIN_URL,
         AJAX_USERNAME,
         AJAX_PASSWORD,
@@ -158,8 +159,33 @@ class LyndaAuth(object):
                 sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Failed to extract login-form..\n")
                 sys.exit(0)
 
-    def authenticate(self):
+    def _cookie_session_step(self, raw_cookies):
+        cookies = {}
+        cookie_parser = ParseCookie()
+        try:
+            cookie_string = re.search(r'Cookie:\s*(.+)\n', raw_cookies, flags=re.I).group(1)
+        except:
+            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Cookies error, Request Headers is required.\n")
+            sys.stdout.write(fc + sd + "[" + fm + sb + "i" + fc + sd + "] : " + fg + sb + "Copy Request Headers for single request to a file, while you are logged in.\n")
+            sys.exit(0)
+        cookie_parser.load(cookie_string)
+        for key, cookie in cookie_parser.items():
+            cookies[key] = cookie.value
+        return cookies
+
+    def _cookies_session(self, cookies):
+        auth_cookies = self._cookie_session_step(raw_cookies=cookies)
+        if auth_cookies:
+            self._session.cookies.update(auth_cookies)
+            return self._session
+        else:
+            return None
+
+    def authenticate(self, cookies=''):
+        if cookies:
+            return self._cookies_session(cookies=cookies)
         if self.organization:
             return self._organization_session()
         else:
             return self._user_session()
+

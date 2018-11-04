@@ -26,7 +26,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from ._internal import InternLyndaCourse as Lynda
 
 
-def course(url, username='', password='', organization='', basic=True, callback=None):
+def course(url, username='', password='', organization='', cookies='', basic=True, callback=None):
     """Returns lynda course instance.
 
     @params:
@@ -35,4 +35,4 @@ def course(url, username='', password='', organization='', basic=True, callback=
         password : Lynda account password required : type (string)
         organization : Lynda organization name optional : type (string)
     """
-    return Lynda(url, username, password, organization, basic, callback)
+    return Lynda(url, username, password, organization, cookies, basic, callback)
