@@ -67,7 +67,7 @@ else:
 NO_DEFAULT = object()
 
 # endpoints for login via email / password
-USER_LOGIN_URL = "https://www.lynda.com/signin"
+USER_LOGIN_URL = "https://www.lynda.com/signin/lynda"
 AJAX_USERNAME = "https://www.lynda.com/signin/user"
 AJAX_PASSWORD = "https://www.lynda.com/signin/password"
 

@@ -73,9 +73,9 @@ class LyndaAuth(object):
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
         else:
-            sigin_form  = re.search(r'(?s)(<form[^>]+data-form-name=["\']signin["\'][^>]*>.+?</form>)', webpage)
+            sigin_form  = re.search(r'(?s)(<form[^>]+?data-form-name=["\']signin["\'][^>]*>(?P<form>.+?)</form>)', webpage)
             if sigin_form:
-                form_html = sigin_form.group()
+                form_html = sigin_form.group('form')
                 sigin_webpage, signin_url = self._user_login_steps(form_html, AJAX_PASSWORD, {'email': self.username}, USER_LOGIN_URL)
                 password_form = sigin_webpage.get('body')
                 if not password_form:
