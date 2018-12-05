@@ -245,6 +245,7 @@ class LyndaLectures(object):
         return self._getbest()
 
     def get_quality(self, best_quality='', streams='', requested=''):
+        best = best_quality
         if requested:
             index = 0
             while index < len(streams):
@@ -253,10 +254,6 @@ class LyndaLectures(object):
                     best = streams[index]
                     break
                 index += 1
-            if not best:
-                best = best_quality
-        if not requested:
-            best = best_quality
         return best
 
 class LyndaLectureStream(object):
