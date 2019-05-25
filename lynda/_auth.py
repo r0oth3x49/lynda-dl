@@ -160,17 +160,13 @@ class LyndaAuth(object):
                 sys.exit(0)
 
     def _cookie_session_step(self, raw_cookies):
-        cookies = {}
-        cookie_parser = ParseCookie()
-        try:
-            cookie_string = re.search(r'Cookie:\s*(.+)\n', raw_cookies, flags=re.I).group(1)
-        except:
+        mobj = re.search(r'(?is)(?:token=(?P<token>(.+?){223}))', raw_cookies)
+        if mobj:
+            cookies = mobj.groupdict()
+        else:
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Cookies error, Request Headers is required.\n")
             sys.stdout.write(fc + sd + "[" + fm + sb + "i" + fc + sd + "] : " + fg + sb + "Copy Request Headers for single request to a file, while you are logged in.\n")
             sys.exit(0)
-        cookie_parser.load(cookie_string)
-        for key, cookie in cookie_parser.items():
-            cookies[key] = cookie.value
         return cookies
 
     def _cookies_session(self, cookies):
@@ -188,4 +184,3 @@ class LyndaAuth(object):
             return self._organization_session()
         else:
             return self._user_session()
-
