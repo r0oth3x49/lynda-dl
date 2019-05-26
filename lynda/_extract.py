@@ -157,15 +157,7 @@ class Lynda(ProgressBar):
     def _extract_subtitles(self, video_id):
         url =  CAPTIONS_URL.format(video_id=video_id)
         try:
-            subs_raw = self._session.get(url)
-            if "Status=\"NotFound\"" in subs_raw.content:
-                return {
-                    'type' : 'subtitle',
-                    'language' : 'en',
-                    'extension' : 'srt',
-                    'subtitle_data' : None,
-                    }
-            subs = subs_raw.json()
+            subs = self._session.get(url).json()
         except conn_error as e:
             print("")
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
