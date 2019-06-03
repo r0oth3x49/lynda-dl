@@ -62,9 +62,6 @@ class InternLyndaCourse(LyndaCourse, Lynda):
             self._short_description =       self._info['short_description']
             self._assets_count      =       self._info['assets_count']
             self._chapters          =       [InternLyndaChapter(z) for z in self._info['chapters']]
-            sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to logout now...\n")
-            self._logout()
-            sys.stdout.write(fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sb + "Logged out successfully.\n")
             self._have_basic = True
         if auth.get('login') == 'failed':
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Lynda Says : The username or password is invalid ..\n")

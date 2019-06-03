@@ -99,11 +99,6 @@ class Lynda(ProgressBar):
         else:
             return {'login' : 'failed'}
 
-    def _logout(self):
-        if self._session:
-            self._session.get(LOGOUT_URL)
-        return
-
     def _fix_subtitles(self, subs):
         srt = ''
         seq_counter = 0
