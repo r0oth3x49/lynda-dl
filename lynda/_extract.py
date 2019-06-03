@@ -163,22 +163,18 @@ class Lynda(ProgressBar):
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
         except ValueError as e:
-            print("")
-            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "JSONDecodeError : it seems your cookies got expired, provide again.\n")
-            sys.exit(0)
+            return {
+                'type': 'subtitle',
+                'language': 'en',
+                'extension': 'srt',
+                'subtitle_data': None,
+            }
         if subs:
             return {
                     'type' : 'subtitle',
                     'language' : 'en',
                     'extension' : 'srt',
                     'subtitle_data' : self._fix_subtitles(subs),
-                    }
-        else:
-            return {
-                    'type' : 'subtitle',
-                    'language' : 'en',
-                    'extension' : 'srt',
-                    'subtitle_data' : None,
                     }
 
     def _max(self, data):
