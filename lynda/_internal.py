@@ -63,7 +63,8 @@ class InternLyndaCourse(LyndaCourse, Lynda):
             self._assets_count      =       self._info['assets_count']
             self._chapters          =       [InternLyndaChapter(z) for z in self._info['chapters']]
             sys.stdout.write(fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Trying to logout now...\n")
-            self._logout()
+            if not self._cookies:
+                self._logout()
             sys.stdout.write(fc + sd + "[" + fm + sb + "+" + fc + sd + "] : " + fg + sb + "Logged out successfully.\n")
             self._have_basic = True
         if auth.get('login') == 'failed':

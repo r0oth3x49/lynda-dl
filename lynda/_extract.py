@@ -107,23 +107,27 @@ class Lynda(ProgressBar):
     def _fix_subtitles(self, subs):
         srt = ''
         seq_counter = 0
-        for pos in range(0, len(subs) - 1):
-            seq_current = subs[pos]
-            m_current = re.match(self._TIMECODE_REGEX, seq_current['Timecode'])
-            if m_current is None:
-                continue
-            seq_next = subs[pos + 1]
-            m_next = re.match(self._TIMECODE_REGEX, seq_next['Timecode'])
-            if m_next is None:
-                continue
-            appear_time = m_current.group('timecode')
-            disappear_time = m_next.group('timecode')
-            text = seq_current['Caption'].strip()
-            if text:
-                seq_counter += 1
-                srt += '%s\r\n%s --> %s\r\n%s\r\n\r\n' % (seq_counter, appear_time, disappear_time, text)
-        if srt:
-            return srt
+        if not 'status="notfound"' in subs.text.lower():
+            try:
+                subs = subs.json()
+            except ValueError:
+                return
+            for pos in range(0, len(subs) - 1):
+                seq_current = subs[pos]
+                m_current = re.match(self._TIMECODE_REGEX, seq_current['Timecode'])
+                if m_current is None:
+                    continue
+                seq_next = subs[pos + 1]
+                m_next = re.match(self._TIMECODE_REGEX, seq_next['Timecode'])
+                if m_next is None:
+                    continue
+                appear_time = m_current.group('timecode')
+                disappear_time = m_next.group('timecode')
+                text = seq_current['Caption'].strip()
+                if text:
+                    seq_counter += 1
+                    srt += '%s\r\n%s --> %s\r\n%s\r\n\r\n' % (seq_counter, appear_time, disappear_time, text)
+        return srt
 
     def _extract_asset_download_url(self, url):
         try:
@@ -155,31 +159,20 @@ class Lynda(ProgressBar):
         return _temp
 
     def _extract_subtitles(self, video_id):
-        url =  CAPTIONS_URL.format(video_id=video_id)
+        url = CAPTIONS_URL.format(video_id=video_id)
         try:
-            subs = self._session.get(url).json()
+            subs = self._session.get(url)
         except conn_error as e:
             print("")
             sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "Connection error : make sure your internet connection is working.\n")
             sys.exit(0)
-        except ValueError as e:
-            print("")
-            sys.stdout.write(fc + sd + "[" + fr + sb + "-" + fc + sd + "] : " + fr + sb + "JSONDecodeError : it seems your cookies got expired, provide again.\n")
-            sys.exit(0)
-        if subs:
-            return {
-                    'type' : 'subtitle',
-                    'language' : 'en',
-                    'extension' : 'srt',
-                    'subtitle_data' : self._fix_subtitles(subs),
-                    }
-        else:
-            return {
-                    'type' : 'subtitle',
-                    'language' : 'en',
-                    'extension' : 'srt',
-                    'subtitle_data' : None,
-                    }
+        return {
+                'type' : 'subtitle',
+                'language' : 'en',
+                'extension' : 'srt',
+                'subtitle_data' : self._fix_subtitles(subs),
+                }
+        
 
     def _max(self, data):
         return {'url' : [x['url'] for x in data if x['size'] == max([x['size'] for x in data])][0]}
