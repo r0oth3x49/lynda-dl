@@ -7,6 +7,10 @@
 # lynda-dl
 **A cross-platform python based utility to download courses from lynda for personal offline use.**
 
+## ***Note***
+ - i don't provide any exe file for this repository use the exe files on your own risk i 'm not responsible for anything
+ that happens to your account or system, use this repository from source with python installed.
+
 [![lynda-dl.png](https://i.postimg.cc/NFqdCyxH/lynda-dl.png)](https://postimg.cc/341jdxV8)
 
 ## ***Features***
