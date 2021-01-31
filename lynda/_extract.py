@@ -269,8 +269,8 @@ class Lynda(ProgressBar):
                 chapter_title = self._sanitize(self._clean(entry.get('Title'))) or self._sanitize(self._clean(entry.get('Videos', [])[0].get('Title')))
                 chapter = "{0:02d} {1!s}".format(chapter_index, chapter_title)
                 lectures = entry.get('Videos', [])
+                _temp_lectures = []
                 if lectures and len(lectures) > 0:
-                    _temp_lectures = []
                     for entry in lectures:
                         text = '\033[2K\033[1G\r' + fc + sd + "[" + fm + sb + "*" + fc + sd + "] : " + fg + sb + "Downloading course information .. "
                         self._spinner(text)
